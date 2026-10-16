@@ -1,0 +1,20 @@
+{
+  "name": "info492-demo1",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24.18.0 <25"
+  },
+  "scripts": {
+    "start": "node server.mjs",
+    "generate-data": "node generate-data.mjs",
+    "build": "node build.mjs https://info492-demo1-api.info492-sample.workers.dev",
+    "deploy:api": "wrangler deploy --config wrangler.json",
+    "deploy:site": "npm run build && firebase deploy --only hosting --project info492-sub-team-4 --config firebase.json"
+  },
+  "devDependencies": {
+    "firebase-tools": "15.34.0",
+    "wrangler": "4.151.0"
+  }
+}

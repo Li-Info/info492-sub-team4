@@ -1,0 +1,54 @@
+{
+  "dataset_id": "info492-sub-team4-demo1-public-case-questions",
+  "version": "0.1.0",
+  "questions": [
+    {
+      "task_id": "D1-01",
+      "prompt": "For a simulated RFI about the main tank wall, report the minimum wall thickness and the concrete and reinforcing-steel quantities cited by Turner."
+    },
+    {
+      "task_id": "D1-02",
+      "prompt": "For a simulated RFI on the curved tank formwork, how many panels did Turner report and how were the panels fabricated and coordinated?"
+    },
+    {
+      "task_id": "D1-03",
+      "prompt": "According to Terracon's case report, what material and strength were reported for the tank walls, and why was standard concrete considered unsuitable?"
+    },
+    {
+      "task_id": "D1-04",
+      "prompt": "What inspection and material-testing work did Terracon report during construction of the tank?"
+    },
+    {
+      "task_id": "D1-05",
+      "prompt": "Which additive does Hycrete say was used for the saltwater tank, and what functions does the company attribute to it?"
+    },
+    {
+      "task_id": "D1-06",
+      "prompt": "What structural role does MKA assign to the tank, and which effects does it say influenced seismic design and detailing?"
+    },
+    {
+      "task_id": "D1-07",
+      "prompt": "Summarize the four construction phases listed by Seattle Aquarium for the Ocean Pavilion."
+    },
+    {
+      "task_id": "D1-08",
+      "prompt": "What foundation concrete placement quantity did Seattle Aquarium report in its 2022 annual report?"
+    },
+    {
+      "task_id": "D1-09",
+      "prompt": "The simulated RFI asks for the tank capacity. What capacity do the available sources report, and do they agree?"
+    },
+    {
+      "task_id": "D1-10",
+      "prompt": "The simulated RFI asks how much reinforcing steel was used for the tank. Report the quantities in the available sources and identify any unresolved difference."
+    },
+    {
+      "task_id": "D1-11",
+      "prompt": "Does the assembled public-source corpus provide the project-approved Hycrete Endure WP dosage, concrete mix design, or acceptance criteria?"
+    },
+    {
+      "task_id": "D1-12",
+      "prompt": "What approved waterstop product and width are required at the main tank wall-to-slab construction joint?"
+    }
+  ]
+}

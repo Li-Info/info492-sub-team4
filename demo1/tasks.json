@@ -1,0 +1,311 @@
+{
+  "dataset_id": "info492-sub-team4-demo1-public-case-tasks",
+  "version": "0.1.0",
+  "generated_on": "2026-10-15",
+  "generation_note": "Deterministic bank of manually authored synthetic RFI-style prompts. It contains no actual RFI correspondence and generates no project technical facts.",
+  "task_counts": {
+    "answerable": 8,
+    "source_disagreement": 2,
+    "not_in_corpus": 2,
+    "total": 12
+  },
+  "tasks": [
+    {
+      "task_id": "D1-01",
+      "category": "direct_retrieval",
+      "answerability": "answerable",
+      "synthetic_scenario": true,
+      "prompt": "For a simulated RFI about the main tank wall, report the minimum wall thickness and the concrete and reinforcing-steel quantities cited by Turner.",
+      "reference_answer": "Turner reports a minimum wall thickness of 2 feet, 680 cubic yards of concrete, and 355 tons of reinforcing steel.",
+      "required_elements": [
+        {
+          "element": "minimum wall thickness: 2 feet",
+          "source_id": "SRC-TURNER-2022",
+          "chunk_id": "TURNER-TANK-QUANTITIES"
+        },
+        {
+          "element": "concrete: 680 cubic yards",
+          "source_id": "SRC-TURNER-2022",
+          "chunk_id": "TURNER-TANK-QUANTITIES"
+        },
+        {
+          "element": "reinforcing steel: 355 tons",
+          "source_id": "SRC-TURNER-2022",
+          "chunk_id": "TURNER-TANK-QUANTITIES"
+        }
+      ],
+      "scoring_note": "Require all three quantities, correct units, and attribution to Turner. Do not present these values as approved design requirements."
+    },
+    {
+      "task_id": "D1-02",
+      "category": "direct_retrieval",
+      "answerability": "answerable",
+      "synthetic_scenario": true,
+      "prompt": "For a simulated RFI on the curved tank formwork, how many panels did Turner report and how were the panels fabricated and coordinated?",
+      "reference_answer": "Turner reports 229 CNC-cut foam panels attached to PERI backing and coated with truck-bed liner; Rhino and Grasshopper were used to work with the double-curved geometry.",
+      "required_elements": [
+        {
+          "element": "229 panels",
+          "source_id": "SRC-TURNER-2022",
+          "chunk_id": "TURNER-FORMWORK"
+        },
+        {
+          "element": "CNC-cut foam panels with PERI backing and truck-bed liner coating",
+          "source_id": "SRC-TURNER-2022",
+          "chunk_id": "TURNER-FORMWORK"
+        },
+        {
+          "element": "Rhino and Grasshopper used for double-curved geometry",
+          "source_id": "SRC-TURNER-2022",
+          "chunk_id": "TURNER-FORMWORK"
+        }
+      ],
+      "scoring_note": "Score each required element separately; retain the source attribution."
+    },
+    {
+      "task_id": "D1-03",
+      "category": "direct_retrieval",
+      "answerability": "answerable",
+      "synthetic_scenario": true,
+      "prompt": "According to Terracon's case report, what material and strength were reported for the tank walls, and why was standard concrete considered unsuitable?",
+      "reference_answer": "Terracon reports that high-strength 10,000 psi grout was selected because, with the congested reinforcement, aggregate in standard concrete could separate before settling. This is a case-report statement, not an approved project specification.",
+      "required_elements": [
+        {
+          "element": "high-strength grout, not concrete",
+          "source_id": "SRC-TERRACON-2024",
+          "chunk_id": "TERRACON-MATERIAL-SELECTION"
+        },
+        {
+          "element": "10,000 psi",
+          "source_id": "SRC-TERRACON-2024",
+          "chunk_id": "TERRACON-MATERIAL-SELECTION"
+        },
+        {
+          "element": "aggregate separation before settling in congested reinforcement",
+          "source_id": "SRC-TERRACON-2024",
+          "chunk_id": "TERRACON-MATERIAL-SELECTION"
+        }
+      ],
+      "scoring_note": "A response calling the reported material 10,000 psi concrete loses the material-identification element."
+    },
+    {
+      "task_id": "D1-04",
+      "category": "direct_retrieval",
+      "answerability": "answerable",
+      "synthetic_scenario": true,
+      "prompt": "What inspection and material-testing work did Terracon report during construction of the tank?",
+      "reference_answer": "Terracon reports inspection of reinforcing steel and grout in construction sections, nearly 650 material tests, and field/laboratory testing that included concrete, shotcrete, and grout.",
+      "required_elements": [
+        {
+          "element": "reinforcement and grout inspected by construction sections",
+          "source_id": "SRC-TERRACON-2024",
+          "chunk_id": "TERRACON-TESTING"
+        },
+        {
+          "element": "nearly 650 material tests",
+          "source_id": "SRC-TERRACON-2024",
+          "chunk_id": "TERRACON-TESTING"
+        },
+        {
+          "element": "testing included concrete, shotcrete, and grout",
+          "source_id": "SRC-TERRACON-2024",
+          "chunk_id": "TERRACON-TESTING"
+        }
+      ],
+      "scoring_note": "Accept 'about 650' for 'nearly 650'; do not infer test results or acceptance thresholds."
+    },
+    {
+      "task_id": "D1-05",
+      "category": "direct_retrieval",
+      "answerability": "answerable_with_attribution",
+      "synthetic_scenario": true,
+      "prompt": "Which additive does Hycrete say was used for the saltwater tank, and what functions does the company attribute to it?",
+      "reference_answer": "Hycrete says Endure WP, formerly W1000, was used as an additive and describes it as waterproofing the concrete and forming a protective layer over the rebar to help protect against corrosion.",
+      "required_elements": [
+        {
+          "element": "Hycrete Endure WP, formerly W1000",
+          "source_id": "SRC-HYCRETE-CASE",
+          "chunk_id": "HYCRETE-PRODUCT-USE"
+        },
+        {
+          "element": "waterproofing and rebar corrosion protection",
+          "source_id": "SRC-HYCRETE-CASE",
+          "chunk_id": "HYCRETE-PRODUCT-USE"
+        },
+        {
+          "element": "claim attributed to Hycrete",
+          "source_id": "SRC-HYCRETE-CASE",
+          "chunk_id": "HYCRETE-PRODUCT-USE"
+        }
+      ],
+      "scoring_note": "Require attribution because this is the product manufacturer's case study."
+    },
+    {
+      "task_id": "D1-06",
+      "category": "direct_retrieval",
+      "answerability": "answerable",
+      "synthetic_scenario": true,
+      "prompt": "What structural role does MKA assign to the tank, and which effects does it say influenced seismic design and detailing?",
+      "reference_answer": "MKA describes the cantilevered concrete tank as part of the building's primary gravity- and lateral-force-resisting systems; the tank's geometry and sloshing-water effects influenced seismic design and detailing.",
+      "required_elements": [
+        {
+          "element": "primary gravity- and lateral-force-resisting role",
+          "source_id": "SRC-MKA-PROJECT",
+          "chunk_id": "MKA-STRUCTURAL-ROLE"
+        },
+        {
+          "element": "unusual geometry and sloshing-water effects",
+          "source_id": "SRC-MKA-PROJECT",
+          "chunk_id": "MKA-STRUCTURAL-ROLE"
+        }
+      ],
+      "scoring_note": "Do not invent design loads, reinforcement schedules, or seismic coefficients."
+    },
+    {
+      "task_id": "D1-07",
+      "category": "direct_retrieval",
+      "answerability": "answerable",
+      "synthetic_scenario": true,
+      "prompt": "Summarize the four construction phases listed by Seattle Aquarium for the Ocean Pavilion.",
+      "reference_answer": "The Aquarium lists site preparation; foundation and lower levels; shell, core, roof, and habitat formwork; and completion of interiors, habitats, exhibits, and rooftop public space.",
+      "required_elements": [
+        {
+          "element": "site preparation, excavation, and deep soil mixing",
+          "source_id": "SRC-AQUARIUM-PROGRESS",
+          "chunk_id": "AQUARIUM-CONSTRUCTION-PHASES"
+        },
+        {
+          "element": "foundation and lower levels",
+          "source_id": "SRC-AQUARIUM-PROGRESS",
+          "chunk_id": "AQUARIUM-CONSTRUCTION-PHASES"
+        },
+        {
+          "element": "shell, core, roof, and habitat formwork",
+          "source_id": "SRC-AQUARIUM-PROGRESS",
+          "chunk_id": "AQUARIUM-CONSTRUCTION-PHASES"
+        },
+        {
+          "element": "interiors, habitats, exhibits, and rooftop public space",
+          "source_id": "SRC-AQUARIUM-PROGRESS",
+          "chunk_id": "AQUARIUM-CONSTRUCTION-PHASES"
+        }
+      ],
+      "scoring_note": "This is a high-level owner timeline task, not a trade-level schedule task."
+    },
+    {
+      "task_id": "D1-08",
+      "category": "direct_retrieval",
+      "answerability": "answerable",
+      "synthetic_scenario": true,
+      "prompt": "What foundation concrete placement quantity did Seattle Aquarium report in its 2022 annual report?",
+      "reference_answer": "Seattle Aquarium reports that 1,700 cubic feet of concrete was poured for the foundation in the progress covered by its 2022 annual report.",
+      "required_elements": [
+        {
+          "element": "1,700 cubic feet",
+          "source_id": "SRC-AQUARIUM-ANNUAL-REPORT-2022",
+          "chunk_id": "AQUARIUM-FOUNDATION-POUR"
+        },
+        {
+          "element": "foundation pour, attributed to the 2022 annual report",
+          "source_id": "SRC-AQUARIUM-ANNUAL-REPORT-2022",
+          "chunk_id": "AQUARIUM-FOUNDATION-POUR"
+        }
+      ],
+      "scoring_note": "Retain cubic feet; do not convert or treat as the total project quantity."
+    },
+    {
+      "task_id": "D1-09",
+      "category": "source_reconciliation",
+      "answerability": "source_disagreement",
+      "synthetic_scenario": true,
+      "prompt": "The simulated RFI asks for the tank capacity. What capacity do the available sources report, and do they agree?",
+      "reference_answer": "The sources do not agree in the currently assembled corpus: Terracon reports 325,000 gallons, while Hycrete reports 360,000 gallons. State both with attribution and say the difference is not reconciled here.",
+      "required_elements": [
+        {
+          "element": "Terracon: 325,000 gallons",
+          "source_id": "SRC-TERRACON-2024",
+          "chunk_id": "TERRACON-MATERIAL-SELECTION"
+        },
+        {
+          "element": "Hycrete: 360,000 gallons",
+          "source_id": "SRC-HYCRETE-CASE",
+          "chunk_id": "HYCRETE-TANK-CAPACITY"
+        },
+        {
+          "element": "explicitly flag the difference as unresolved",
+          "source_id": null,
+          "chunk_id": null
+        }
+      ],
+      "scoring_note": "Do not select one number as the authoritative value or imply the two sources use the same measurement basis."
+    },
+    {
+      "task_id": "D1-10",
+      "category": "source_reconciliation",
+      "answerability": "source_disagreement",
+      "synthetic_scenario": true,
+      "prompt": "The simulated RFI asks how much reinforcing steel was used for the tank. Report the quantities in the available sources and identify any unresolved difference.",
+      "reference_answer": "Terracon reports nearly 3 million pounds of rebar in the walls; Turner reports 355 tons of reinforcing steel for the tank. Preserve each source's units and attribution because the quantities are not reconciled in this corpus.",
+      "required_elements": [
+        {
+          "element": "Terracon: nearly 3 million pounds in the walls",
+          "source_id": "SRC-TERRACON-2024",
+          "chunk_id": "TERRACON-MATERIAL-SELECTION"
+        },
+        {
+          "element": "Turner: 355 tons of reinforcing steel",
+          "source_id": "SRC-TURNER-2022",
+          "chunk_id": "TURNER-TANK-QUANTITIES"
+        },
+        {
+          "element": "preserve units and flag unresolved scope/quantity difference",
+          "source_id": null,
+          "chunk_id": null
+        }
+      ],
+      "scoring_note": "Do not convert or merge the reported values; the sources do not explain the difference."
+    },
+    {
+      "task_id": "D1-11",
+      "category": "missing_information",
+      "answerability": "not_in_corpus",
+      "synthetic_scenario": true,
+      "prompt": "Does the assembled public-source corpus provide the project-approved Hycrete Endure WP dosage, concrete mix design, or acceptance criteria?",
+      "reference_answer": "No. The Hycrete case study reports product use and the manufacturer's description of its functions, but the assembled sources do not provide an approved project dosage, mix design, or acceptance criteria.",
+      "required_elements": [
+        {
+          "element": "state that these details are not in the assembled corpus",
+          "source_id": null,
+          "chunk_id": null
+        },
+        {
+          "element": "distinguish reported product use from project approval",
+          "source_id": "SRC-HYCRETE-CASE",
+          "chunk_id": "HYCRETE-PRODUCT-USE"
+        }
+      ],
+      "scoring_note": "Any invented dosage, mix proportion, or acceptance threshold is an unsupported answer."
+    },
+    {
+      "task_id": "D1-12",
+      "category": "missing_information",
+      "answerability": "not_in_corpus",
+      "synthetic_scenario": true,
+      "prompt": "What approved waterstop product and width are required at the main tank wall-to-slab construction joint?",
+      "reference_answer": "The assembled public-source corpus does not identify an approved waterstop product or width for that joint. The correct response is to mark the information as missing and request the current approved joint detail.",
+      "required_elements": [
+        {
+          "element": "do not claim a product or width is specified",
+          "source_id": null,
+          "chunk_id": null
+        },
+        {
+          "element": "identify the approved joint detail as a missing source",
+          "source_id": null,
+          "chunk_id": null
+        }
+      ],
+      "scoring_note": "This tests abstention within the assembled corpus; it does not assert that the actual project lacks such a specification."
+    }
+  ]
+}

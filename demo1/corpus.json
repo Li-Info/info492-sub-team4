@@ -1,0 +1,209 @@
+{
+  "dataset_id": "info492-sub-team4-demo1-public-case-corpus",
+  "version": "0.1.0",
+  "prepared_on": "2026-10-15",
+  "purpose": "A source-attributed public-document corpus for a small Demo 1 retrieval pilot about concrete-related RFI information preparation for the Seattle Aquarium Ocean Pavilion.",
+  "scope_notice": "These records summarize public project updates, case studies, engineering descriptions, owner materials, and public meeting comments. They are not approved construction specifications, submittals, inspection acceptance criteria, or actual RFI records.",
+  "records": [
+    {
+      "source_id": "SRC-TURNER-2022",
+      "title": "Important Milestone Reached on Seattle Aquarium Ocean Pavilion",
+      "publisher": "Turner Construction Company",
+      "published_on": "2022-11-21",
+      "source_type": "general_contractor_project_update",
+      "evidence_class": "Contractor-reported construction facts",
+      "url": "https://www.turnerconstruction.com/insights/important-milestone-reached-on-seattle-aquarium-ocean-pavilion",
+      "location_note": "Article body, concrete tank pour and formwork description",
+      "limits": "Project update, not an issued-for-construction drawing or contract specification. Preserve Turner's wording and units when answering.",
+      "chunks": [
+        {
+          "chunk_id": "TURNER-TANK-QUANTITIES",
+          "topic": "main tank reported quantities",
+          "text": "Turner Construction reports that the Ocean Pavilion main tank wall is at least 2 feet thick and that the tank pour used 680 cubic yards of concrete and 355 tons of reinforcing steel. Turner describes the reinforcement amount as about four times that of a typical core.",
+          "claim_type": "reported_project_quantity"
+        },
+        {
+          "chunk_id": "TURNER-FORMWORK",
+          "topic": "curved tank formwork",
+          "text": "Turner reports that the non-straight tank geometry required 229 foam formwork panels. The panels were CNC cut, attached to PERI backing, and coated with truck-bed liner. Rhino and Grasshopper were used to work with the tank's double-curved concrete geometry.",
+          "claim_type": "reported_construction_method"
+        }
+      ]
+    },
+    {
+      "source_id": "SRC-TERRACON-2024",
+      "title": "Concrete, steel testing helps bring Seattle Aquarium to life",
+      "publisher": "Terracon",
+      "published_on": "2024-12-11",
+      "source_type": "special_inspection_provider_case_study",
+      "evidence_class": "Inspection provider's retrospective case report",
+      "url": "https://www.terracon.com/2024/12/11/case-study-seattle-aquarium-ocean-pavilion/",
+      "location_note": "Challenge, Solution, and Results sections",
+      "limits": "Terracon reports project facts and testing work; the article is not the approved mix design or contract specification. It calls the 10,000 psi material grout, not concrete.",
+      "chunks": [
+        {
+          "chunk_id": "TERRACON-MATERIAL-SELECTION",
+          "topic": "reported tank material and placement challenge",
+          "text": "Terracon describes a custom-built 325,000-gallon tank. It reports nearly 3 million pounds of reinforcing steel in the walls and says standard concrete was unsuitable because aggregate could separate before settling in the congested reinforcement. A high-strength 10,000 psi grout was chosen instead.",
+          "claim_type": "reported_project_case_fact"
+        },
+        {
+          "chunk_id": "TERRACON-TESTING",
+          "topic": "special inspection and material testing",
+          "text": "Terracon reports that inspectors examined reinforcement and grout in sections as the tank was built, completed nearly 650 material tests, and performed field and laboratory testing that included concrete, shotcrete, and grout.",
+          "claim_type": "reported_inspection_activity"
+        }
+      ]
+    },
+    {
+      "source_id": "SRC-HYCRETE-CASE",
+      "title": "Seattle Aquarium Ocean Pavilion",
+      "publisher": "Hycrete",
+      "published_on": null,
+      "source_type": "product_manufacturer_case_study",
+      "evidence_class": "Product manufacturer's project claim",
+      "url": "https://hycrete.com/case-study/seattle-aquarium-ocean-pavilion/",
+      "location_note": "Introduction, Challenge, and Solution sections",
+      "limits": "Attribute product-performance and project-use statements to Hycrete. The case study does not provide an approved project dosage, mix design, or acceptance criterion.",
+      "chunks": [
+        {
+          "chunk_id": "HYCRETE-PRODUCT-USE",
+          "topic": "reported waterproofing and corrosion-protection product",
+          "text": "Hycrete's case study says Hycrete Endure WP, formerly Hycrete W1000, was used as a concrete additive for the saltwater tank. Hycrete describes the product as waterproofing the concrete and forming a protective layer over reinforcing steel to help protect against corrosion.",
+          "claim_type": "vendor_reported_project_use"
+        },
+        {
+          "chunk_id": "HYCRETE-TANK-CAPACITY",
+          "topic": "vendor-reported tank capacity",
+          "text": "Hycrete's case study describes the curved saltwater tank as having a capacity of 360,000 gallons.",
+          "claim_type": "vendor_reported_project_quantity"
+        }
+      ]
+    },
+    {
+      "source_id": "SRC-MKA-PROJECT",
+      "title": "Seattle Aquarium Ocean Pavilion",
+      "publisher": "Magnusson Klemencic Associates",
+      "published_on": null,
+      "source_type": "structural_engineer_project_page",
+      "evidence_class": "Project engineer's design description",
+      "url": "https://www.mka.com/projects/seattle-aquarium-ocean-pavilion/",
+      "location_note": "Project description",
+      "limits": "Provides structural context, not design calculations, approved dimensions, or material acceptance requirements.",
+      "chunks": [
+        {
+          "chunk_id": "MKA-STRUCTURAL-ROLE",
+          "topic": "tank structural role and design context",
+          "text": "MKA describes the geometrically complex, cantilevered concrete tank as part of the building's primary gravity- and lateral-force-resisting systems. The page says the tank's unusual geometry and sloshing water effects affected seismic design and detailing.",
+          "claim_type": "engineer_reported_design_context"
+        },
+        {
+          "chunk_id": "MKA-FORMWORK-CONTEXT",
+          "topic": "custom formwork context",
+          "text": "MKA says the tank design incorporated 3D printing and computer numerical control for custom-cut formwork.",
+          "claim_type": "engineer_reported_design_method"
+        }
+      ]
+    },
+    {
+      "source_id": "SRC-AQUARIUM-PROGRESS",
+      "title": "Ocean Pavilion Progress",
+      "publisher": "Seattle Aquarium",
+      "published_on": null,
+      "source_type": "owner_project_progress_page",
+      "evidence_class": "Owner-published project timeline",
+      "url": "https://www.seattleaquarium.org/explore-the-aquarium/campus/ocean-pavilion/progress/",
+      "location_note": "Explore Ocean Pavilion Construction Phases",
+      "limits": "High-level milestone descriptions; not a detailed schedule, trade sequence, or technical specification.",
+      "chunks": [
+        {
+          "chunk_id": "AQUARIUM-CONSTRUCTION-PHASES",
+          "topic": "owner-reported construction phases",
+          "text": "Seattle Aquarium groups construction into four phases: site preparation, including excavation and deep soil mixing; foundation and lower-level construction; creating the building form, including shell, core, roof, and habitat formwork; and completing interiors, habitats, exhibits, and the rooftop public space.",
+          "claim_type": "owner_reported_project_timeline"
+        }
+      ]
+    },
+    {
+      "source_id": "SRC-AQUARIUM-ANNUAL-REPORT-2022",
+      "title": "Seattle Aquarium 2022 Annual Report",
+      "publisher": "Seattle Aquarium",
+      "published_on": "2023-08",
+      "source_type": "owner_annual_report",
+      "evidence_class": "Owner-published construction progress report",
+      "url": "https://www.seattleaquarium.org/wp-content/uploads/2023/08/Seattle-Aquarium-2022-Annual-Report-final.pdf",
+      "location_note": "Page 10, 'The Ocean Pavilion rises into the sky'",
+      "limits": "A construction progress quantity, not an approved concrete quantity or performance requirement.",
+      "chunks": [
+        {
+          "chunk_id": "AQUARIUM-FOUNDATION-POUR",
+          "topic": "reported foundation concrete placement",
+          "text": "Seattle Aquarium's 2022 annual report says 1,700 cubic feet of concrete was poured for the Ocean Pavilion foundation during the construction progress described in the report.",
+          "claim_type": "owner_reported_construction_quantity"
+        }
+      ]
+    },
+    {
+      "source_id": "SRC-SDC-MINUTES-2020-03-05",
+      "title": "Seattle Design Commission: Overlook Walk & Ocean Pavilion, March 5, 2020 minutes",
+      "publisher": "Seattle Design Commission",
+      "published_on": "2020-03-05",
+      "source_type": "public_design_review_minutes",
+      "evidence_class": "Public commission comments during design review",
+      "url": "https://www.seattle.gov/documents/Departments/OPCD/DesignCommission/Waterfront%E2%80%93OverlookWalk/SeattleDesignCommission-2020.03.05OverlookWalk_OceanPavilionminutes.pdf",
+      "location_note": "Ocean Pavilion materials discussion",
+      "limits": "Commission comments are design-review feedback and do not establish a project specification.",
+      "chunks": [
+        {
+          "chunk_id": "SDC-LOW-CARBON-CONCRETE",
+          "topic": "public design-review comment on concrete",
+          "text": "The Design Commission minutes say commissioners appreciated the project's use of sustainable materials, specifically low-carbon concrete and cement.",
+          "claim_type": "commission_comment"
+        }
+      ]
+    },
+    {
+      "source_id": "SRC-SDC-MINUTES-2020-08-20",
+      "title": "Seattle Design Commission: Ocean Pavilion, August 20, 2020 minutes",
+      "publisher": "Seattle Design Commission",
+      "published_on": "2020-08-20",
+      "source_type": "public_design_review_minutes",
+      "evidence_class": "Public design-development review comments",
+      "url": "https://www.seattle.gov/Documents/Departments/OPCD/DesignCommission/Waterfront%E2%80%93OverlookWalk/SeattleDesignCommission-2020.08.20OceanPavilion_Minutes.pdf",
+      "location_note": "Summary of presentation and proposed public-space materials",
+      "limits": "The minutes describe proposed design features; they are not construction specifications.",
+      "chunks": [
+        {
+          "chunk_id": "SDC-CONCRETE-PAVING-PATTERN",
+          "topic": "proposed concrete paving treatment",
+          "text": "The August 2020 design-review minutes describe proposed patterns that would be sandblasted and etched into concrete paving areas in the public-space design.",
+          "claim_type": "design_proposal_summary"
+        }
+      ]
+    }
+  ],
+  "pending_sources": [
+    {
+      "source_id": "PENDING-SDC-2020-08-PRESENTATION",
+      "title": "Ocean Pavilion 90% Design presentation (draft)",
+      "url": "https://www.seattle.gov/Documents/Departments/OPCD/DesignCommission/Waterfront%E2%80%93OverlookWalk/SeattleDesignCommission-2020.08.20OceanPavilion_Presentation_DRAFT.pdf",
+      "status": "manual_review_needed",
+      "reason": "Direct retrieval timed out. Search indexing exposed a draft precast-concrete bench drawing, but the PDF pages should be manually checked before adding its dimensions to the frozen corpus."
+    },
+    {
+      "source_id": "PENDING-EIS-SCOPING-SUMMARY",
+      "title": "Seattle Aquarium Environmental Impact Statement Scoping Summary Report",
+      "url": "https://www.seattleaquarium.org/wp-content/uploads/2023/10/Seattle-Aquarium-Environmental-Impact-Statement-Scoping-Summary-Report-2018.pdf",
+      "status": "not_loaded",
+      "reason": "The large planning document was not retrieved in this pass. Use for environmental and project-planning context only unless concrete-specific, task-relevant passages are located."
+    },
+    {
+      "source_id": "PENDING-SEATTLE-PERMIT-PORTAL",
+      "title": "Seattle Services Portal public records search",
+      "url": "https://services.seattle.gov/Portal/Cap/CapHome.aspx?module=DPDGeneral&TabName=DPDGeneral",
+      "search_hint": "1483 Alaskan Way",
+      "status": "manual_search_needed",
+      "reason": "The portal did not expose its records through the current retrieval path. Permit drawings or approved submittals, if publicly available, could improve specification-level task validity."
+    }
+  ]
+}
