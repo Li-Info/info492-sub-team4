@@ -1,6 +1,6 @@
 import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
-import { dataset, questionBank, answerSchema, instructions, HttpError, parseAnswer } from "./rfi.mjs";
+import { dataset, questionBank, createAnswerSchema, prepareRun, instructions, HttpError, parseAnswer } from "./rfi.mjs";
 
 const host = "127.0.0.1";
 const port = Number(process.env.PORT || 8792);
@@ -21,6 +21,9 @@ const staticFiles = new Map([
   ["/", ["index.html", "text/html; charset=utf-8"]],
   ["/styles.css", ["styles.css", "text/css; charset=utf-8"]],
   ["/app.js", ["app.js", "text/javascript; charset=utf-8"]],
+  ["/shared.js", ["shared.js", "text/javascript; charset=utf-8"]],
+  ["/sources.js", ["sources.js", "text/javascript; charset=utf-8"]],
+  ["/sources.html", ["sources.html", "text/html; charset=utf-8"]],
   ["/corpus_for_manual_search.md", ["corpus_for_manual_search.md", "text/markdown; charset=utf-8"]],
 ]);
 
@@ -49,8 +52,9 @@ async function readJson(request) {
   }
 }
 
-async function askAI(question) {
-  const content = JSON.stringify({ question, documents: dataset.documents });
+async function askAI(question, selectedDocuments) {
+  const content = JSON.stringify({ question, documents: selectedDocuments });
+  const answerSchema = createAnswerSchema(selectedDocuments);
   const headers = { "Content-Type": "application/json" };
   let url;
   let body;
@@ -140,12 +144,13 @@ async function askAI(question) {
     text = (data.content || []).filter(item => item.type === "text").map(item => item.text).join("");
   }
   if (!text.trim()) throw new HttpError(502, "The AI service did not return an answer. Please try a different question.");
-  return parseAnswer(text);
+  return parseAnswer(text, selectedDocuments);
 }
 
 let activeRequest = false;
 
 const server = createServer(async (request, response) => {
+  let trace;
   response.setHeader("Cache-Control", "no-store");
   response.setHeader("X-Content-Type-Options", "nosniff");
   response.setHeader("Referrer-Policy", "no-referrer");
@@ -172,20 +177,25 @@ const server = createServer(async (request, response) => {
       return;
     }
     if (request.method === "GET" && path === "/api/status") {
-      json(response, 200, { ready, provider, model });
+      json(response, 200, { ready, provider, model, pipelineVersion: "demo2-1.0" });
       return;
     }
     if (request.method === "POST" && path === "/api/ask") {
       if (!request.headers.origin || !allowedOrigins.has(request.headers.origin)) throw new HttpError(403, "Open the local sample page to ask a question.");
       const body = await readJson(request);
       if (typeof body.question !== "string" || !body.question.trim() || body.question.trim().length > 1000) throw new HttpError(400, "Enter a question between 1 and 1000 characters.");
-      if (!ready) throw new HttpError(503, "AI access has not been set up yet. Ask your team to configure the local AI service.");
       if (activeRequest) throw new HttpError(429, "A question is already being processed. Please wait for the answer.");
-      activeRequest = true;
       const started = performance.now();
+      trace = prepareRun(body.question.trim());
+      const selectedDocuments = trace.retrieval.passages;
+      if (!selectedDocuments.length) throw new HttpError(422, "No passages matched this question. No AI request was made. Try terms used in the source corpus; a retrieval miss does not prove the answer is absent.");
+      if (!ready) throw new HttpError(503, "AI access has not been set up yet. Ask your team to configure the local AI service.");
+      activeRequest = true;
       try {
-        const result = await askAI(body.question.trim());
-        json(response, 200, { ...result, model, durationMs: Math.round(performance.now() - started) });
+        trace.aiRequestedAt = new Date().toISOString();
+        trace.modelInputPassageIds = selectedDocuments.map(document => document.id);
+        const result = await askAI(body.question.trim(), selectedDocuments);
+        json(response, 200, { ...result, model, durationMs: Math.round(performance.now() - started), trace: { ...trace, status: "completed", completedAt: new Date().toISOString(), citedPassageIds: result.sources.map(source => source.id) } });
       } finally {
         activeRequest = false;
       }
@@ -193,7 +203,8 @@ const server = createServer(async (request, response) => {
     }
     throw new HttpError(404, "This page was not found.");
   } catch (error) {
-    if (!response.headersSent && !response.destroyed) json(response, error.status || 500, { error: error.status ? error.message : "The local service could not complete the request." });
+    const message = error.status ? error.message : "The local service could not complete the request.";
+    if (!response.headersSent && !response.destroyed) json(response, error.status || 500, { error: message, ...(trace ? { model, trace: { ...trace, status: "failed", completedAt: new Date().toISOString(), citedPassageIds: [], error: message } } : {}) });
   }
 });
 

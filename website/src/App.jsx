@@ -18,11 +18,9 @@ export default function App() {
         <h1>{project.title}</h1>
         <a
           className="paper-link"
-          href="https://info492-team4-demo1.web.app/"
-          target="_blank"
-          rel="noopener noreferrer"
+          href="/demo/"
         >
-          Try Demo 1
+          Try Demo 2
         </a>
       </header>
 

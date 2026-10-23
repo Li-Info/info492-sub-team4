@@ -1,11 +1,14 @@
 # INFO 492 Sub Team 4
 
-This repository contains the team website and Demo 1 for a pilot study of AI-assisted information retrieval when preparing construction RFIs from a subcontractor's perspective. The project context is the Seattle Aquarium Ocean Pavilion.
+This repository contains the team website and RFI retrieval demo for a pilot study of AI-assisted information retrieval when preparing construction RFIs from a subcontractor's perspective. The project context is the Seattle Aquarium Ocean Pavilion.
 
 The hypothesis is that AI assistance can improve information accuracy by at least 10% compared with manual search using the same documents. The repository does not report a measured accuracy improvement.
 
 - [Team website](https://info492-sub-team-4.web.app/)
-- [Live Demo 1](https://info492-team4-demo1.web.app/)
+- [Live Demo 2](https://info492-sub-team-4.web.app/demo/)
+- [Standalone demo](https://info492-team4-demo1.web.app/)
+
+The code in `demo1/` and the live demo use the Demo 2 iteration with passage retrieval and a separate source page. The team website opens the demo at `/demo/` in the same tab. The `demo1/` folder name and standalone demo URL are retained from Demo 1.
 
 ## Repository structure
 
@@ -13,11 +16,15 @@ The repository root has no application package. Run installation and application
 
 | Path | Purpose |
 | --- | --- |
-| [website/](website/) | React and Vite source for the team website, including its Demo 1 link. |
+| [website/](website/) | React and Vite source for the team website, including its internal Demo 2 link. |
+| [website/build.mjs](website/build.mjs), [firebase.json](website/firebase.json) | Builds the homepage with the demo under `/demo/` and configures the main Hosting site. |
 | [demo1/index.html](demo1/index.html), [app.js](demo1/app.js), [styles.css](demo1/styles.css) | Demo interface for entering questions and reviewing answers with evidence. |
+| [demo1/sources.html](demo1/sources.html), [sources.js](demo1/sources.js), [shared.js](demo1/shared.js) | Separate corpus page, passage highlighting and shared browser helpers. |
+| [demo1/retrieval.mjs](demo1/retrieval.mjs), [retrieval.test.mjs](demo1/retrieval.test.mjs) | Keyword passage retrieval and pipeline regression tests. |
+| [demo1/wrangler.preview.json](demo1/wrangler.preview.json) | Local preview using the existing Cloudflare login and a remote AI binding. |
 | [demo1/server.mjs](demo1/server.mjs) | Local Node.js server and AI requests using server-side environment variables. |
 | [demo1/worker.mjs](demo1/worker.mjs), [wrangler.json](demo1/wrangler.json) | Deployed Cloudflare Worker API and Workers AI binding. |
-| [demo1/rfi.mjs](demo1/rfi.mjs) | Full LLM system prompt in `instructions`, response schema, corpus mapping and response validation. |
+| [demo1/rfi.mjs](demo1/rfi.mjs) | Full LLM system prompt in `instructions`, retrieved-context response schema, corpus mapping and response validation. |
 | [demo1/corpus.json](demo1/corpus.json) | Public-source summaries with attribution and source limitations. |
 | [demo1/corpus_for_manual_search.md](demo1/corpus_for_manual_search.md) | Readable version of the same source records and passages for manual search. |
 | [demo1/questions.json](demo1/questions.json) | The 12 participant-facing questions, without answers or scoring labels. |
@@ -37,7 +44,7 @@ The website uses React and Vite. The demo server and data preparation script use
 
 Open the live demo and type or paste a question into **Your question**, then click **Ask AI**. Review the answer and its supporting corpus passages. The **Still missing** section identifies information the response could not establish.
 
-Expand a source in **Source corpus** to read its supplied passages. The manual packet is available through **Download manual search packet**. The 12 evaluation questions remain in `demo1/questions.json`; there is no question selector on the website.
+In the Demo 2 interface, open **View source corpus** to read the supplied passages. Citation links locate and highlight the cited passage. Returning to the question page restores the answer in the same browser tab. The manual packet is available through **Download manual search packet**. The 12 evaluation questions remain in `demo1/questions.json`; there is no question selector on the website.
 
 ## Run locally
 
@@ -58,9 +65,9 @@ npm ci
 npm run dev
 ```
 
-Open the local address printed by Vite. Run `npm run build` to create `website/dist/`, or `npm run preview` to preview that build.
+Open the local address printed by Vite to view the homepage. Run `npm run build` to build the homepage and copy the demo into `website/dist/demo/`. `npm run preview` serves the resulting static pages. For local AI testing, use the demo preview described below; the deployed API accepts requests from the published site origins.
 
-### Demo 1
+### Demo 2
 
 Open a separate terminal at the repository root. The following example uses PowerShell and an existing Cloudflare account with a token authorized to use Workers AI:
 
@@ -83,7 +90,7 @@ The local server can serve the page and corpus without AI credentials. Real AI a
 
 ## Data and synthetic task justification
 
-This package prepares a small, source-attributed corpus of publicly reported Ocean Pavilion information for Demo 1. The deployed application now uses these records.
+This package prepares a small, source-attributed corpus of publicly reported Ocean Pavilion information, first used in Demo 1 and retained for Demo 2. The deployed application uses these records.
 
 The project facts come from real public sources, but the retrieval chunks are concise paraphrases rather than complete copies of the linked documents. The 12 RFI-style prompts are synthetic evaluation tasks, not real project RFIs. The corpus does not contain approved construction specifications, material submittals, inspection acceptance criteria, or actual project RFIs. A case report that says a product or material was used must be reported as a source-attributed project claim, not upgraded into an approved requirement.
 
@@ -120,13 +127,25 @@ npm run generate-data
 
 Draft drawing dimensions from the 90% Design presentation were excluded because they had not been verified against the PDF pages during preparation. EIS scoping material was not used as a concrete technical source, and permit records were not incorporated through the original portal lookup. Verify original documents before expanding the corpus with these materials.
 
+## Local Demo 2 preview
+
+After installing dependencies in `demo1/`, run `npm run preview` with an existing Cloudflare login. If authentication is needed, run `npx wrangler login` first. The preview is available at http://127.0.0.1:8792. This runs the interface and retrieval code locally and uses real Workers AI inference through the remote `AI` binding; it does not deploy the site or API. AI calls use the account's available allowance. Stop with Ctrl+C.
+
+Run `npm test` for retrieval and API regression checks. These tests use simulated AI responses where needed and do not measure model accuracy.
+
+The **Retrieval record** shows ranked passages selected before inference and marks the passages cited in the final answer. Source-specific limitations remain on the source page.
+
+In **Session records**, **Download CSV** exports one row per request for viewing in Excel or another spreadsheet application. Columns contain the question, AI answer, retrieved and cited passage IDs, missing information, request seconds, status and errors. **Score** and **Notes** are blank for human assessment. Failed requests remain in the export. CSV files use UTF-8 with a byte-order mark and quote multiline text.
+
+**Raw JSON** retains the complete original records, including passage snapshots, candidate rankings, cited IDs, timestamps and failures. Both downloads are snapshots of all requests in the current tab; downloading does not clear them. Request seconds measure the browser request, including network time, and exclude participant reading and evidence review. Keyword match scores measure lexical overlap, not answer correctness; detailed scores and search terms remain in the raw records.
+
 ## AI workflow and LLM prompts
 
-The current model is `@cf/meta/llama-3.3-70b-instruct-fp8-fast`, accessed through Cloudflare Workers AI. The browser sends the current question to the backend. The backend sends that question and all 12 corpus passages to the model. The model is an existing model; this project does not train it or use a vector search index.
+The current model is `@cf/meta/llama-3.3-70b-instruct-fp8-fast`, accessed through Cloudflare Workers AI. The browser sends the current question to the backend. The backend uses weighted keyword overlap to select up to four passages before inference. Matching uses passage text, topic, publisher, title and source limitations, with a small generic term-alias list. The complete ranking and selected passage snapshots are returned in the trace. The model receives only the question and selected passages. This project does not train the model or use a vector search index. Retrieval is lexical and may miss paraphrases or relevant evidence; a miss does not establish absence from the whole corpus.
 
 The complete system prompt is the `instructions` variable in [demo1/rfi.mjs](demo1/rfi.mjs). It requires answers to use supplied passages and cite supporting passage IDs. It also requires the model to preserve attribution, flag unresolved source differences, and identify missing context or documents needed to resolve an RFI.
 
-`answerSchema` in the same file defines `answer`, `citations` and `missingInformation`. `worker.mjs` and `server.mjs` pass the prompt as a system message and serialize the current question with `dataset.documents` as the user message.
+`createAnswerSchema` in the same file defines `answer`, `citations` and `missingInformation`. `worker.mjs` and `server.mjs` pass the prompt as a system message and serialize the current question with the retrieved passages as the user message. Citation IDs are restricted to that retrieved set. The trace records selected passage IDs separately from final citation IDs; it is an observable retrieval record, not hidden model reasoning.
 
 The runtime does not load `tasks.json` or send reference answers to the model. Returned citation IDs are mapped to source metadata and excerpts for display. Format and known-ID validation do not prove that an excerpt supports a claim; that requires human checking.
 
@@ -138,7 +157,19 @@ The supplied CSV is an unfilled template with an example counterbalanced A/B all
 
 For each question, start timing before the first reading and stop when the answer and source/passage IDs are recorded. Use the same definition in both conditions. Retain the original answer and its evidence, along with elapsed time and any failure. The website's **AI request** timer measures request latency only, so it is not the full-task time used for the manual comparison.
 
-Score required elements against `tasks.json`. Accuracy is the total number of correct required elements divided by the total number of required elements. Check citation support separately and report results by task type. Compare average full-task completion time using actual observations.
+For Demo 2, score each of the 12 questions as pass or fail under its applicable minimum content requirements, using `tasks.json` as the reference-answer bank. Task-level content accuracy is the number of passing questions divided by 12, multiplied by 100%. Apply the same final minimum rules to manual and agent answers and report results overall and by task type.
+
+| Task type | Minimum content requirements |
+| --- | --- |
+| Fact retrieval | Correct required facts, values, units and task-specific details. |
+| Source differences | Both source-attributed figures in their original units, without an invented reconciliation. |
+| Missing information | Identify the requested gap without inventing a parameter; identify missing approved evidence where required. |
+
+Record the exact minimum requirements applied to each question with its judgment. The reference answers and required elements in `tasks.json` do not constitute completed observations. Keep the original responses and record who scored them. Disclose any scoring revisions or run selection made after seeing results; such decisions limit the strength of the comparison.
+
+Check citation quality separately from content accuracy. Assess the retrieval path by comparing the required evidence with the passages retrieved, actually supplied to the model and finally cited. Use the manual recording to distinguish finding the wrong passage from omitting information after finding the right one.
+
+Relative accuracy improvement is `(agent accuracy - manual accuracy) / manual accuracy * 100%`; the percentage-point difference is `agent accuracy - manual accuracy`. Relative improvement is undefined if manual accuracy is zero. Compare average full-task completion time only when reliable timing observations are available for both methods.
 
 To assess missing RFI context, check whether the answer identifies what cannot be established from the supplied passages and names the document needed next. Public reports about product use do not establish project approval. For the waterstop question, for example, the missing source is the approved joint detail. Missing-context evaluation should check that distinction rather than reward a guessed product or width.
 
@@ -148,21 +179,26 @@ Functional checks of AI answers are separate from the comparative experiment. Th
 
 Use the live links for review; deployment is not needed to run the local projects. The checked-in deployment settings target the team's existing accounts and require access to those accounts.
 
-From the repository root, deploy the demo API and site separately:
+From the repository root, deploy the API, then build and deploy the main website with its integrated demo:
 
 ```sh
 cd demo1
 npm ci
 npx wrangler login
 npm run deploy:api
+cd ../website
+npm ci
+npm run build
 npx firebase login
-npm run deploy:site
+npx firebase deploy --only hosting --project info492-sub-team-4 --config firebase.json
 ```
 
-The Worker uses the `AI` binding in `wrangler.json`. The demo Hosting configuration selects site `info492-team4-demo1` in Firebase project `info492-sub-team-4`. Its deployment command does not deploy the main team website.
+The Worker uses the `AI` binding in `demo1/wrangler.json`. The main Hosting configuration selects site `info492-sub-team-4` and publishes the demo at `/demo/`. Its demo pages use the same Worker API as the standalone site. The API allows both main-site and standalone-site origins.
 
-`npm run build` publishes only `index.html`, `styles.css`, `app.js` and `corpus_for_manual_search.md` to `demo1/dist/`. It inserts the Worker origin from the build command into the frontend and updates the matching connection policy in `demo1/firebase.json`. The scoring key is not a published static file or an AI context source.
+Inside `demo1/`, `npm run build` prepares only `index.html`, `sources.html`, `styles.css`, `app.js`, `sources.js`, `shared.js` and `corpus_for_manual_search.md` in `demo1/dist/`. It inserts the Worker origin from the build command into the frontend and updates the matching connection policy in `demo1/firebase.json`. The website build copies those public files into `website/dist/demo/`. The scoring key is not a published static file or an AI context source.
 
-For a deployment to different accounts, update the Hosting site and project settings, the Worker name, and the build command's API origin. Update `allowedOrigins` in `worker.mjs` to match the new frontend origin. The website has its own Firebase configuration in `website/` and is built and deployed separately.
+The standalone demo remains available at its existing URL. To update it separately, run `npm run deploy:site` inside `demo1/`; that command selects Hosting site `info492-team4-demo1` and does not deploy the homepage.
+
+For a deployment to different accounts, update the Hosting site and project settings, the Worker name, and the API origins in the build scripts. Update `allowedOrigins` in `worker.mjs` to match the new frontend origins.
 
 Environment files, dependency folders and generated deployment folders are excluded by `.gitignore`. Keep credentials out of Git.

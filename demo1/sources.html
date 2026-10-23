@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="The supplied public-source corpus for the INFO 492 Sub Team 4 RFI reference finder." />
+    <title>Source Corpus | Demo 2</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="sources.js" type="module"></script>
+  </head>
+  <body>
+    <div class="page corpus-page">
+      <header class="project-header corpus-header">
+        <div class="site-header">
+          <a class="brand" href="/">INFO 492 · SUB TEAM 4</a>
+          <span class="sample-label">DEMO 2 · SOURCE CORPUS</span>
+        </div>
+        <h1>Read the source.<br /><span>Check the passage.</span></h1>
+        <p class="intro-copy">Browse the supplied passages.</p>
+        <p class="data-note">Paraphrased public sources, not approved construction specifications.</p>
+      </header>
+      <main class="corpus-workspace">
+        <nav class="corpus-navigation panel" aria-label="Source categories">
+          <div class="corpus-toolbar">
+            <a class="back-link" href="./">← Back to question &amp; answer</a>
+            <a class="manual-packet-link" href="corpus_for_manual_search.md" download>Download manual search packet</a>
+          </div>
+          <p id="corpus-count" class="corpus-count">Loading corpus…</p>
+          <div id="source-navigation" class="source-navigation"></div>
+        </nav>
+        <section aria-label="Supplied source passages">
+          <p id="selection-status" class="selection-status" role="status" aria-live="polite" hidden></p>
+          <p id="corpus-error" class="error-message" role="alert" hidden></p>
+          <section id="source-overview" aria-labelledby="overview-title" hidden>
+            <h2 id="overview-title">All sources</h2>
+            <div id="source-previews" class="source-previews"></div>
+          </section>
+          <div id="source-records" class="source-records"></div>
+        </section>
+      </main>
+      <footer><span>INFO 492 · SUB TEAM 4</span><a href="./">Return to reference finder</a></footer>
+    </div>
+  </body>
+</html>

@@ -7,6 +7,8 @@
     "node": ">=24.18.0 <25"
   },
   "scripts": {
+    "test": "node --test retrieval.test.mjs",
+    "preview": "node build.mjs --local && wrangler dev --config wrangler.preview.json --ip 127.0.0.1 --port 8792",
     "start": "node server.mjs",
     "generate-data": "node generate-data.mjs",
     "build": "node build.mjs https://info492-demo1-api.info492-sample.workers.dev",

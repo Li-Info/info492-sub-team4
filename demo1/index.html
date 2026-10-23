@@ -4,22 +4,22 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="An AI-assisted RFI reference finder using attributed public-source summaries about the Seattle Aquarium Ocean Pavilion." />
-    <title>RFI Reference Finder | Sub Team 4</title>
-    <link rel="stylesheet" href="/styles.css" />
-    <script src="/app.js" defer></script>
+    <title>Demo 2 | RFI Reference Finder</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="app.js" type="module"></script>
   </head>
   <body>
     <div class="page">
       <header class="project-header">
         <div class="site-header">
           <a class="brand" href="/" aria-label="Sub Team 4 home">INFO 492 · SUB TEAM 4</a>
-          <span class="sample-label">PUBLIC-SOURCE CORPUS</span>
+          <span class="sample-label">DEMO 2 · PUBLIC-SOURCE CORPUS</span>
         </div>
         <section class="intro" aria-labelledby="page-title">
           <p class="eyebrow">RFI REFERENCE FINDER</p>
           <h1 id="page-title">Find the detail.<br /><span>Keep the evidence.</span></h1>
-          <p class="intro-copy">Ask a question about the Ocean Pavilion source summaries. Review the evidence before preparing an RFI.</p>
-          <p class="data-note">Public project reports and simulated RFI tasks. These summaries are not approved construction specifications.</p>
+          <p class="intro-copy">Search the Ocean Pavilion sources and check the evidence.</p>
+          <p class="data-note">Paraphrased public sources and simulated RFI tasks. Not approved construction specifications.</p>
         </section>
       </header>
 
@@ -35,16 +35,10 @@
                 <label for="question">Your question</label>
                 <textarea id="question" name="question" rows="4" maxlength="1000" required placeholder="According to Terracon's case report, what material and strength were reported for the tank walls?"></textarea>
                 <div class="form-footer">
-                  <span id="request-status" role="status" aria-live="polite">Answers use only the supplied corpus. Preserve each source's attribution and limits.</span>
+                  <span id="request-status" role="status" aria-live="polite"></span>
                   <button id="ask-button" class="primary-button" type="submit">Ask AI <span aria-hidden="true">↗</span></button>
                 </div>
               </form>
-              <div class="examples">
-                <label for="test-question">Test questions</label>
-                <select id="test-question" disabled>
-                  <option value="">Loading test questions...</option>
-                </select>
-              </div>
             </div>
 
             <p id="error-message" class="error-message" role="alert" hidden></p>
@@ -57,7 +51,7 @@
               <div id="empty-state" class="empty-state">
                 <svg viewBox="0 0 56 64" fill="none" aria-hidden="true"><path d="M10 3h24l12 12v44a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="2"/><path d="M33 3v13h13M17 29h20M17 38h20M17 47h12" stroke="currentColor" stroke-width="2"/></svg>
                 <h3>A reference you can check.</h3>
-                <p>Your answer will appear here with supporting excerpts. Missing information stays marked as missing.</p>
+                <p>Ask a question to see the answer and its sources.</p>
               </div>
               <div id="answer-content" hidden>
                 <p id="answer-text" class="answer-text"></p>
@@ -72,21 +66,32 @@
                 </div>
               </div>
             </section>
+            <section id="retrieval-panel" class="retrieval-panel panel" aria-labelledby="retrieval-title" hidden>
+              <h2 id="retrieval-title">Retrieval record</h2>
+              <p id="retrieval-summary" class="trace-summary"></p>
+              <div id="retrieved-passages" class="retrieved-passages"></div>
+            </section>
           </section>
 
-          <aside class="documents-panel panel" aria-labelledby="documents-title">
+          <aside class="sidebar">
+          <section class="documents-panel panel" aria-labelledby="documents-title">
             <div class="section-heading">
               <h2 id="documents-title">Source corpus</h2>
               <span id="document-count" class="document-count">0</span>
             </div>
-            <p class="documents-intro">Open a source to read its supplied summaries. During timed tasks, use this corpus rather than external pages.</p>
             <p id="corpus-meta" class="corpus-meta"></p>
-            <a class="manual-packet-link" href="/corpus_for_manual_search.md" download>Download manual search packet</a>
-            <div id="documents" class="documents"></div>
-            <div class="provenance">
-              <span class="provenance-dot" aria-hidden="true"></span>
-              <p>Source text is paraphrased. Publisher claims and source disagreements are not approved requirements. RFI tasks are synthetic; no experiment results are reported here.</p>
+            <a class="corpus-button" href="sources.html">View source corpus <span aria-hidden="true">↗</span></a>
+            <a class="manual-packet-link" href="corpus_for_manual_search.md" download>Download manual search packet</a>
+          </section>
+          <section class="records-panel panel" aria-labelledby="records-title">
+            <h2 id="records-title">Session records</h2>
+            <p id="record-count" class="record-count" aria-live="polite">0 recorded requests</p>
+            <p id="storage-note" class="records-copy">Download before closing this tab.</p>
+            <div class="record-actions">
+              <button id="download-records" class="secondary-button" type="button" disabled>Download CSV</button>
+              <button id="download-json" class="text-button" type="button" disabled>Raw JSON</button>
             </div>
+          </section>
           </aside>
         </div>
       </main>
