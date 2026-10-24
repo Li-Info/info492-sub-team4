@@ -1,0 +1,93 @@
+{
+  "source_url": "https://docs.google.com/document/d/1mWZ5glFVbaz-HXh6wqxvimRZcSYoCS94IFlVUTWIhmA/edit?tab=t.ou87288eibor",
+  "source_tab": "Evaluation Lab 10.22",
+  "source_revision": "AHj4eMSm0W8Hk3NBxooIaASynepvy7T3DjZM6T0tP-wfaOffEpIjz5y_3kjnY6-8TPG7SMu-3Fy_Z32C283ixkaBwPsw1C0G-834q4F7bac",
+  "description": "Transcription of the Lab Step 2 answer-key table and scoring rules. These are reference answers, not participant responses or model outputs.",
+  "task_count": 10,
+  "scoring_rules": [
+    "includes the required information;",
+    "identifies the correct source;",
+    "preserves the original units;",
+    "reports conflicting values separately;",
+    "distinguishes public claims from approved requirements; and",
+    "identifies missing information without guessing."
+  ],
+  "clarifications": [
+    "D1-01: The source attribution to Turner must be included.",
+    "D1-03: The material is grout, not concrete.",
+    "D1-10: The original units must be preserved.",
+    "D1-12: “Not in the corpus” does not mean that the real project has no waterstop requirement."
+  ],
+  "tasks": [
+    {
+      "task_id": "D1-01",
+      "question": "For a simulated RFI about the main tank wall, report the minimum wall thickness and the concrete and reinforcing-steel quantities cited by Turner.",
+      "person_a": "2 feet; 680 cubic yards of concrete; 355 tons of reinforcing steel.",
+      "person_b": "2-foot wall; 680 cubic yards of concrete; 355 tons of rebar.",
+      "final_answer_key": "Turner reports 2 feet, 680 cubic yards, and 355 tons. Source: SRC-TURNER-2022 / TURNER-TANK-QUANTITIES."
+    },
+    {
+      "task_id": "D1-02",
+      "question": "For a simulated RFI on the curved tank formwork, how many panels did Turner report and how were the panels fabricated and coordinated?",
+      "person_a": "229 CNC-cut foam panels with PERI backing and truck-bed liner. Rhino and Grasshopper were used.",
+      "person_b": "229 panels; CNC cut; PERI backing; truck-bed liner; Rhino and Grasshopper.",
+      "final_answer_key": "All details are required. Source: SRC-TURNER-2022 / TURNER-FORMWORK."
+    },
+    {
+      "task_id": "D1-03",
+      "question": "According to Terracon's case report, what material and strength were reported for the tank walls, and why was standard concrete considered unsuitable?",
+      "person_a": "10,000 psi grout, not concrete. Aggregates could separate in the congested reinforcement.",
+      "person_b": "10,000 psi grout; standard concrete could not settle well.",
+      "final_answer_key": "The material must be identified as grout, not concrete. Source: SRC-TERRACON-2024 / TERRACON-MATERIAL-SELECTION."
+    },
+    {
+      "task_id": "D1-04",
+      "question": "What inspection and material-testing work did Terracon report during construction of the tank?",
+      "person_a": "Reinforcement and grout were inspected. There were nearly 650 tests.",
+      "person_b": "Nearly 650 tests covered concrete, shotcrete, and grout.",
+      "final_answer_key": "Include inspection of reinforcement and grout, nearly 650 tests, and the three tested materials. Source: SRC-TERRACON-2024 / TERRACON-TESTING."
+    },
+    {
+      "task_id": "D1-05",
+      "question": "Which additive does Hycrete say was used for the saltwater tank, and what functions does the company attribute to it?",
+      "person_a": "Endure WP, formerly W1000, waterproofed concrete and protected rebar.",
+      "person_b": "Endure WP/W1000 helped waterproof concrete and protect rebar.",
+      "final_answer_key": "Include the product name, former name, and both functions. Attribute the claim to Hycrete. Source: SRC-HYCRETE-CASE / HYCRETE-PRODUCT-USE."
+    },
+    {
+      "task_id": "D1-06",
+      "question": "What structural role does MKA assign to the tank, and which effects does it say influenced seismic design and detailing?",
+      "person_a": "The tank was part of the gravity and lateral-force systems. Its shape and sloshing water affected seismic design.",
+      "person_b": "The tank resisted gravity and lateral forces. Water movement affected seismic detailing.",
+      "final_answer_key": "Include the tank’s structural role, unusual geometry, and sloshing-water effects. Source: SRC-MKA-PROJECT / MKA-STRUCTURAL-ROLE."
+    },
+    {
+      "task_id": "D1-09",
+      "question": "The simulated RFI asks for the tank capacity. What capacity do the available sources report, and do they agree?",
+      "person_a": "Terracon: 325,000 gallons. Hycrete: 360,000 gallons. Unresolved.",
+      "person_b": "The sources report 325,000 and 360,000 gallons, but they do not agree.",
+      "final_answer_key": "Report both values with attribution and state that the difference is unresolved. Sources: Terracon and Hycrete."
+    },
+    {
+      "task_id": "D1-10",
+      "question": "The simulated RFI asks how much reinforcing steel was used for the tank. Report the quantities in the available sources and identify any unresolved difference.",
+      "person_a": "Terracon: nearly 3 million pounds. Turner: 355 tons. Unresolved.",
+      "person_b": "Nearly 3 million pounds, or about 1,500 tons, compared with 355 tons.",
+      "final_answer_key": "Keep the original units and source names. Do not combine or reconcile the values."
+    },
+    {
+      "task_id": "D1-11",
+      "question": "Does the assembled public-source corpus provide the project-approved Hycrete Endure WP dosage, concrete mix design, or acceptance criteria?",
+      "person_a": "The corpus does not provide the approved dosage, mix design, or acceptance criteria.",
+      "person_b": "Product use is reported, but approval details are missing.",
+      "final_answer_key": "State that these details are not in the corpus. Do not invent project requirements."
+    },
+    {
+      "task_id": "D1-12",
+      "question": "What approved waterstop product and width are required at the main tank wall-to-slab construction joint?",
+      "person_a": "The approved waterstop product and width are not identified.",
+      "person_b": "The product and width are missing from the corpus.",
+      "final_answer_key": "State that the information is missing from the corpus and request the current approved joint detail."
+    }
+  ]
+}

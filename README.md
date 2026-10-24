@@ -2,7 +2,7 @@
 
 This repository contains the team website and RFI retrieval demo for a pilot study of AI-assisted information retrieval when preparing construction RFIs from a subcontractor's perspective. The project context is the Seattle Aquarium Ocean Pavilion.
 
-The hypothesis is that AI assistance can improve information accuracy by at least 10% compared with manual search using the same documents. The repository does not report a measured accuracy improvement.
+The hypothesis is that AI assistance can improve information accuracy by at least 10% compared with manual search using the same documents. The evaluation worksheet records the team's reported pilot findings for a selected task set.
 
 - [Team website](https://info492-sub-team-4.web.app/)
 - [Live Demo 2](https://info492-sub-team-4.web.app/demo/)
@@ -31,6 +31,8 @@ The repository root has no application package. Run installation and application
 | [demo1/tasks.json](demo1/tasks.json) | The 12 tasks with reference answers and required elements for scoring. |
 | [demo1/generate-data.mjs](demo1/generate-data.mjs) | Validates the supplied data and rebuilds the participant questions and manual packet. |
 | [demo1/experiment_log_template.csv](demo1/experiment_log_template.csv) | Unfilled observation template for answers, evidence and timing. |
+| [eval/lab.pdf](eval/lab.pdf) | Evaluation Lab worksheet with the team's reported run summaries and answer key. |
+| [eval/answer-key.json](eval/answer-key.json) | The ten-task answer-key table and scoring rules transcribed from the Lab. |
 | [demo1/build.mjs](demo1/build.mjs), [firebase.json](demo1/firebase.json) | Builds the demo assets and configures its Firebase Hosting site. |
 | `package.json` and `package-lock.json` in each application folder | Run commands and versioned dependencies. |
 
@@ -148,6 +150,14 @@ The complete system prompt is the `instructions` variable in [demo1/rfi.mjs](dem
 `createAnswerSchema` in the same file defines `answer`, `citations` and `missingInformation`. `worker.mjs` and `server.mjs` pass the prompt as a system message and serialize the current question with the retrieved passages as the user message. Citation IDs are restricted to that retrieved set. The trace records selected passage IDs separately from final citation IDs; it is an observable retrieval record, not hidden model reasoning.
 
 The runtime does not load `tasks.json` or send reference answers to the model. Returned citation IDs are mapped to source metadata and excerpts for display. Format and known-ID validation do not prove that an excerpt supports a claim; that requires human checking.
+
+## Evaluation materials
+
+[eval/lab.pdf](eval/lab.pdf) contains the four-page **Evaluation Lab 10.22** tab from the [team document](https://docs.google.com/document/d/1mWZ5glFVbaz-HXh6wqxvimRZcSYoCS94IFlVUTWIhmA/edit?tab=t.ou87288eibor). It preserves the worksheet text, including its reported results for two AI runs and one manual keyword-search run.
+
+The Lab uses ten selected tasks from the twelve-question bank. [eval/answer-key.json](eval/answer-key.json) preserves its Step 2 reference table, clarifications and scoring rules, with the matching question text from `demo1/questions.json`. These reference answers are separate from participant responses and model outputs. The original source data and `demo1/tasks.json` remain unchanged.
+
+The Lab's fully grounded metric includes correct source support. The content-only protocol below is a different scoring definition for full-bank evaluation; its percentages are not interchangeable with the Lab's results. This snapshot contains the worksheet and reference key, without the original run exports or completed response sheets for those three runs.
 
 ## Experiment protocol and records
 
