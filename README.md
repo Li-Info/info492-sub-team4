@@ -7,6 +7,7 @@ The hypothesis is that AI assistance can improve information accuracy by at leas
 - [Team website](https://info492-sub-team-4.web.app/)
 - [Live Demo 2](https://info492-sub-team-4.web.app/demo/)
 - [Standalone demo](https://info492-team4-demo1.web.app/)
+- [Classroom feedback summary: Demo 1 and Demo 2](feedback/class-feedback-summary.md)
 
 The code in `demo1/` and the live demo use the Demo 2 iteration with passage retrieval and a separate source page. The team website opens the demo at `/demo/` in the same tab. The `demo1/` folder name and standalone demo URL are retained from Demo 1.
 
@@ -33,6 +34,7 @@ The repository root has no application package. Run installation and application
 | [demo1/experiment_log_template.csv](demo1/experiment_log_template.csv) | Unfilled observation template for answers, evidence and timing. |
 | [eval/lab.pdf](eval/lab.pdf) | Evaluation Lab worksheet with the team's reported run summaries and answer key. |
 | [eval/answer-key.json](eval/answer-key.json) | The ten-task answer-key table and scoring rules transcribed from the Lab. |
+| [feedback/class-feedback-summary.md](feedback/class-feedback-summary.md) | LLM-assisted summary of classroom feedback on Demo 1 and Demo 2. |
 | [demo1/build.mjs](demo1/build.mjs), [firebase.json](demo1/firebase.json) | Builds the demo assets and configures its Firebase Hosting site. |
 | `package.json` and `package-lock.json` in each application folder | Run commands and versioned dependencies. |
 
