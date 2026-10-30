@@ -44,7 +44,7 @@ The website uses React and Vite. The demo server and data preparation script use
 
 ## Use the live demo
 
-Open the live demo and type or paste a question into **Your question**, then click **Ask AI**. Review the answer and its supporting corpus passages. The **Still missing** section identifies information the response could not establish.
+Open the live demo and type or paste a question into **Your question**, then click **Ask AI**. Review the answer and its supporting corpus passages. When the response identifies unresolved source differences, **Source differences** lists each source's claim with a passage link. The **Still missing** section identifies information the response could not establish.
 
 In the Demo 2 interface, open **View source corpus** to read the supplied passages. Citation links locate and highlight the cited passage. Returning to the question page restores the answer in the same browser tab. The manual packet is available through **Download manual search packet**. The 12 evaluation questions remain in `demo1/questions.json`; there is no question selector on the website.
 
@@ -135,11 +135,11 @@ After installing dependencies in `demo1/`, run `npm run preview` with an existin
 
 Run `npm test` for retrieval and API regression checks. These tests use simulated AI responses where needed and do not measure model accuracy.
 
-The **Retrieval record** shows ranked passages selected before inference and marks the passages cited in the final answer. Source-specific limitations remain on the source page.
+The **Retrieval record** is collapsed by default. Expand it to compare the retrieved passages with those actually sent to the AI and those cited in the answer. The ranked passage cards show the same stage labels and allow the evidence to be opened. Source-specific limitations remain on the source page.
 
-In **Session records**, **Download CSV** exports one row per request for viewing in Excel or another spreadsheet application. Columns contain the question, AI answer, retrieved and cited passage IDs, missing information, request seconds, status and errors. **Score** and **Notes** are blank for human assessment. Failed requests remain in the export. CSV files use UTF-8 with a byte-order mark and quote multiline text.
+In **Session records**, **Download CSV** exports one row per request for viewing in Excel or another spreadsheet application. Columns contain the question and AI answer, separate passage IDs for **Retrieved passages**, **Sent to AI** and **Cited passages**, missing information and source differences, request seconds, status and errors. **Score** and **Notes** are blank for human assessment. Failed requests remain in the export. CSV files use UTF-8 with a byte-order mark and quote multiline text.
 
-**Raw JSON** retains the complete original records, including passage snapshots, candidate rankings, cited IDs, timestamps and failures. Both downloads are snapshots of all requests in the current tab; downloading does not clear them. Request seconds measure the browser request, including network time, and exclude participant reading and evidence review. Keyword match scores measure lexical overlap, not answer correctness; detailed scores and search terms remain in the raw records.
+**Raw JSON** retains the complete original records, including passage snapshots, candidate rankings, supplied and cited passage IDs, source differences, timestamps and failures. Both downloads are snapshots of all requests in the current tab; downloading does not clear them. Request seconds measure the browser request, including network time, and exclude participant reading and evidence review. Keyword match scores measure lexical overlap, not answer correctness; detailed scores and search terms remain in the raw records.
 
 ## AI workflow and LLM prompts
 
@@ -147,7 +147,7 @@ The current model is `@cf/meta/llama-3.3-70b-instruct-fp8-fast`, accessed throug
 
 The complete system prompt is the `instructions` variable in [demo1/rfi.mjs](demo1/rfi.mjs). It requires answers to use supplied passages and cite supporting passage IDs. It also requires the model to preserve attribution, flag unresolved source differences, and identify missing context or documents needed to resolve an RFI.
 
-`createAnswerSchema` in the same file defines `answer`, `citations` and `missingInformation`. `worker.mjs` and `server.mjs` pass the prompt as a system message and serialize the current question with the retrieved passages as the user message. Citation IDs are restricted to that retrieved set. The trace records selected passage IDs separately from final citation IDs; it is an observable retrieval record, not hidden model reasoning.
+`createAnswerSchema` in the same file defines `answer`, `citations`, `missingInformation` and `sourceDifferences`. Each source-difference entry contains a topic, source-attributed claims and an explanation. Its references must point to retrieved, cited passages from at least two distinct source documents. `worker.mjs` and `server.mjs` pass the prompt as a system message and serialize the current question with the retrieved passages as the user message. Citation IDs are restricted to that retrieved set. The trace records selected passage IDs separately from final citation IDs; it is an observable retrieval record, not hidden model reasoning.
 
 The runtime does not load `tasks.json` or send reference answers to the model. Returned citation IDs are mapped to source metadata and excerpts for display. Format and known-ID validation do not prove that an excerpt supports a claim; that requires human checking.
 

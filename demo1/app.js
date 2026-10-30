@@ -38,9 +38,28 @@ function showError(message) {
 function renderTrace(trace) {
   const panel = document.querySelector("#retrieval-panel");
   panel.hidden = !trace;
+  panel.open = false;
   if (!trace) return;
   const retrieval = trace.retrieval;
-  document.querySelector("#retrieval-summary").textContent = `${retrieval.passages.length} of ${trace.corpus.passageCount} passages retrieved`;
+  const sentIds = trace.modelInputPassageIds || [];
+  const citedIds = trace.citedPassageIds || [];
+  document.querySelector("#retrieval-summary").textContent = `${retrieval.passages.length} retrieved · ${sentIds.length} sent · ${citedIds.length} cited`;
+  const stages = document.querySelector("#retrieval-stages");
+  stages.replaceChildren();
+  for (const [label, ids] of [["Retrieved", retrieval.passages.map(passage => passage.id)], ["Sent to AI", sentIds], ["Cited", citedIds]]) {
+    const stage = element("section", "retrieval-stage");
+    stage.append(element("h3", "", `${label} (${ids.length})`));
+    const list = element("ul", "");
+    for (const id of ids) {
+      const passage = retrieval.passages.find(item => item.id === id);
+      if (!passage) continue;
+      const item = element("li", "");
+      item.append(passageLink(passage, id));
+      list.append(item);
+    }
+    stage.append(ids.length ? list : element("p", "", "None"));
+    stages.append(stage);
+  }
   const container = document.querySelector("#retrieved-passages");
   container.replaceChildren();
   for (const passage of retrieval.passages) {
@@ -48,7 +67,10 @@ function renderTrace(trace) {
     const header = element("div", "retrieval-label");
     header.append(element("span", "rank-label", `#${passage.rank}`));
     const cited = trace.citedPassageIds?.includes(passage.id);
-    header.append(element("span", cited ? "evidence-badge cited" : "evidence-badge", trace.status === "completed" ? cited ? "Cited in answer" : "Retrieved only" : "Retrieved"));
+    const sent = sentIds.includes(passage.id);
+    if (sent) header.append(element("span", "evidence-badge sent", "Sent to AI"));
+    if (cited) header.append(element("span", "evidence-badge cited", "Cited"));
+    if (!sent && !cited) header.append(element("span", "evidence-badge", "Retrieved only"));
     item.append(header, passageLink(passage, passage.id), element("p", "retrieval-topic", `${passage.publisher} · ${passage.topic}`));
     const details = element("details", "retrieval-excerpt");
     details.append(element("summary", "", "Read passage"), element("p", "", passage.text));
@@ -60,6 +82,24 @@ function renderTrace(trace) {
 
 function renderAnswer(result) {
   document.querySelector("#answer-text").textContent = result.answer;
+  const differences = result.sourceDifferences || [];
+  document.querySelector("#source-differences-panel").hidden = differences.length === 0;
+  const differenceContainer = document.querySelector("#source-differences");
+  differenceContainer.replaceChildren();
+  for (const difference of differences) {
+    const card = element("article", "source-difference");
+    const heading = element("div", "difference-heading");
+    heading.append(element("h4", "", difference.topic), element("span", "difference-status", "Unresolved"));
+    card.append(heading);
+    for (const claim of difference.claims) {
+      const source = result.sources.find(item => item.id === claim.passageId);
+      const item = element("div", "difference-claim");
+      item.append(passageLink(source, `${source.publisher} · ${source.id}`), element("p", "", claim.statement));
+      card.append(item);
+    }
+    card.append(element("p", "difference-explanation", difference.explanation));
+    differenceContainer.append(card);
+  }
   const citations = document.querySelector("#citations");
   citations.replaceChildren();
   for (const source of result.sources) {
@@ -158,7 +198,7 @@ downloadButton.addEventListener("click", () => {
 });
 
 jsonButton.addEventListener("click", () => {
-  const record = { formatVersion: "1.0", pipelineVersion: "demo2-1.0", exportedAt: new Date().toISOString(), timingNote: "Request times exclude reading, evidence review and writing a final participant answer. They are not full-task completion times.", records };
+  const record = { formatVersion: "1.1", pipelineVersion: "demo2-1.1", exportedAt: new Date().toISOString(), timingNote: "Request times exclude reading, evidence review and writing a final participant answer. They are not full-task completion times.", records };
   downloadRecords(JSON.stringify(record, null, 2) + "\n", "application/json", "json");
 });
 

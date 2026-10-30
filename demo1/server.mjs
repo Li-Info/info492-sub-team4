@@ -1,6 +1,6 @@
 import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
-import { dataset, questionBank, createAnswerSchema, prepareRun, instructions, HttpError, parseAnswer } from "./rfi.mjs";
+import { dataset, questionBank, createAnswerSchema, prepareRun, pipelineVersion, instructions, HttpError, parseAnswer } from "./rfi.mjs";
 
 const host = "127.0.0.1";
 const port = Number(process.env.PORT || 8792);
@@ -177,7 +177,7 @@ const server = createServer(async (request, response) => {
       return;
     }
     if (request.method === "GET" && path === "/api/status") {
-      json(response, 200, { ready, provider, model, pipelineVersion: "demo2-1.0" });
+      json(response, 200, { ready, provider, model, pipelineVersion });
       return;
     }
     if (request.method === "POST" && path === "/api/ask") {

@@ -7,7 +7,7 @@ function csvCell(value) {
 }
 
 export function recordsToCsv(records) {
-  const rows = [["Request", "Question", "AI answer", "Retrieved passages", "Cited passages", "Missing information", "Request seconds", "Status", "Error", "Score", "Notes"]];
+  const rows = [["Request", "Question", "AI answer", "Retrieved passages", "Sent to AI", "Cited passages", "Missing information", "Source differences", "Request seconds", "Status", "Error", "Score", "Notes"]];
   for (const [index, record] of records.entries()) {
     const result = record.result || {};
     const trace = result.trace || {};
@@ -17,8 +17,10 @@ export function recordsToCsv(records) {
       record.question,
       result.answer,
       (trace.retrieval?.passages || []).map(passage => passage.id).join("; "),
+      (trace.modelInputPassageIds || []).join("; "),
       (trace.citedPassageIds || (result.sources || []).map(source => source.id)).join("; "),
       (result.missingInformation || []).join("; "),
+      (result.sourceDifferences || []).map(difference => `${difference.topic}: ${difference.claims.map(claim => `${claim.passageId}: ${claim.statement}`).join(" | ")} — ${difference.explanation}`).join("\n"),
       Number.isFinite(duration) ? (duration / 1000).toFixed(3) : "",
       record.error || trace.status === "failed" ? "failed" : trace.status || (result.answer ? "completed" : "unknown"),
       record.error || result.error || trace.error || "",

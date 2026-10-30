@@ -1,4 +1,4 @@
-import { dataset, questionBank, createAnswerSchema, prepareRun, instructions, HttpError, parseAnswer } from "./rfi.mjs";
+import { dataset, questionBank, createAnswerSchema, prepareRun, pipelineVersion, instructions, HttpError, parseAnswer } from "./rfi.mjs";
 
 const model = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
 const allowedOrigins = new Set([
@@ -60,7 +60,7 @@ export default {
       }
       if (request.method === "GET" && path === "/api/documents") return json(200, dataset);
       if (request.method === "GET" && path === "/api/questions") return json(200, questionBank);
-      if (request.method === "GET" && path === "/api/status") return json(200, { ready: Boolean(env.AI), provider: "cloudflare", model, pipelineVersion: "demo2-1.0" });
+      if (request.method === "GET" && path === "/api/status") return json(200, { ready: Boolean(env.AI), provider: "cloudflare", model, pipelineVersion });
       if (request.method !== "POST" || path !== "/api/ask") throw new HttpError(404, "This page was not found.");
       if (!acceptedOrigin) throw new HttpError(403, "Open the demo website to ask a question.");
       const body = await readJson(request);
