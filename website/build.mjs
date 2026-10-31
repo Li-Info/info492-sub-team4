@@ -3,7 +3,7 @@ import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
 const website = new URL("./", import.meta.url);
-const demo = new URL("../demo1/", import.meta.url);
+const demo = new URL("../demo/", import.meta.url);
 const local = process.argv.includes("--local");
 
 function run(script, args, cwd) {

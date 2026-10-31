@@ -8,7 +8,7 @@ The hypothesis is that AI assistance can improve information accuracy by at leas
 - [Live Demo 2](https://info492-sub-team-4.web.app/demo/)
 - [Standalone demo](https://info492-team4-demo1.web.app/)
 
-The code in `demo1/` and the live demo use the Demo 2 iteration with passage retrieval and a separate source page. The team website opens the demo at `/demo/` in the same tab. The `demo1/` folder name and standalone demo URL are retained from Demo 1.
+The code in `demo/` contains the current retrieval workflow and source page. The team website opens the demo at `/demo/` in the same tab. Historical snapshots retain the original `demo1/` folder name, and the standalone demo URL is unchanged.
 
 ## Mid-quarter Analysis submission materials
 
@@ -18,8 +18,8 @@ The code in `demo1/` and the live demo use the Demo 2 iteration with passage ret
 | Interim paper | [Mid-quarter Analysis tab in the team document](https://docs.google.com/document/d/1mWZ5glFVbaz-HXh6wqxvimRZcSYoCS94IFlVUTWIhmA/edit?tab=t.7f1jffnywgf2). |
 | Individual contribution statements | At the end of the same [Mid-quarter Analysis tab](https://docs.google.com/document/d/1mWZ5glFVbaz-HXh6wqxvimRZcSYoCS94IFlVUTWIhmA/edit?tab=t.7f1jffnywgf2). |
 | Code and dependency files for the first two demos | [Demo 1 source snapshot](https://github.com/Li-Info/info492-sub-team4/tree/f958c4d87d82f6e6323ebce237b58f4254680858/demo1) and [Demo 2 source snapshot](https://github.com/Li-Info/info492-sub-team4/tree/34c14b4a538086a5665e746c2ac60f1d355f7a4f/demo1). Each includes `package.json` and `package-lock.json`. |
-| Data and preparation | [Source corpus](demo1/corpus.json), [manual search packet](demo1/corpus_for_manual_search.md), [task bank](demo1/tasks.json), [participant questions](demo1/questions.json) and [preparation script](demo1/generate-data.mjs). Data provenance and synthetic-task justification are [documented below](#data-and-synthetic-task-justification). |
-| LLM prompts | The `instructions` variable in [Demo 1's rfi.mjs](https://github.com/Li-Info/info492-sub-team4/blob/f958c4d87d82f6e6323ebce237b58f4254680858/demo1/rfi.mjs) and [Demo 2's rfi.mjs](https://github.com/Li-Info/info492-sub-team4/blob/34c14b4a538086a5665e746c2ac60f1d355f7a4f/demo1/rfi.mjs). The [current prompt](demo1/rfi.mjs) includes later updates. |
+| Data and preparation | [Source corpus](demo/corpus.json), [manual search packet](demo/corpus_for_manual_search.md), [task bank](demo/tasks.json), [participant questions](demo/questions.json) and [preparation script](demo/generate-data.mjs). Data provenance and synthetic-task justification are [documented below](#data-and-synthetic-task-justification). |
+| LLM prompts | The `instructions` variable in [Demo 1's rfi.mjs](https://github.com/Li-Info/info492-sub-team4/blob/f958c4d87d82f6e6323ebce237b58f4254680858/demo1/rfi.mjs) and [Demo 2's rfi.mjs](https://github.com/Li-Info/info492-sub-team4/blob/34c14b4a538086a5665e746c2ac60f1d355f7a4f/demo1/rfi.mjs). The [current prompt](demo/rfi.mjs) includes later updates. |
 | Stakeholder interview transcripts | [Edited interview record](interviews/carrie-dossick-interview-record.md) and [original team notes](interviews/carrie-dossick-notes.md). The edited record is based on notes, not a recording-based transcript. |
 | LLM summary of classroom feedback | [Demo 1 and Demo 2 classroom feedback summary](feedback/class-feedback-summary.md). |
 | Supporting evaluation materials | [Evaluation Lab worksheet](eval/lab.pdf) and [reference answer key](eval/answer-key.json). |
@@ -27,31 +27,31 @@ The code in `demo1/` and the live demo use the Demo 2 iteration with passage ret
 
 ## Repository structure
 
-The repository root has no application package. Run installation and application commands inside `website/` or `demo1/`.
+The repository root has no application package. Run installation and application commands inside `website/` or `demo/`.
 
 | Path | Purpose |
 | --- | --- |
 | [website/](website/) | React and Vite source for the team website, including its internal Demo 2 link. |
 | [website/build.mjs](website/build.mjs), [firebase.json](website/firebase.json) | Builds the homepage with the demo under `/demo/` and configures the main Hosting site. |
-| [demo1/index.html](demo1/index.html), [app.js](demo1/app.js), [styles.css](demo1/styles.css) | Demo interface for entering questions and reviewing answers with evidence. |
-| [demo1/sources.html](demo1/sources.html), [sources.js](demo1/sources.js), [shared.js](demo1/shared.js) | Separate corpus page, passage highlighting and shared browser helpers. |
-| [demo1/retrieval.mjs](demo1/retrieval.mjs), [retrieval.test.mjs](demo1/retrieval.test.mjs) | Keyword passage retrieval and pipeline regression tests. |
-| [demo1/wrangler.preview.json](demo1/wrangler.preview.json) | Local preview using the existing Cloudflare login and a remote AI binding. |
-| [demo1/server.mjs](demo1/server.mjs) | Local Node.js server and AI requests using server-side environment variables. |
-| [demo1/worker.mjs](demo1/worker.mjs), [wrangler.json](demo1/wrangler.json) | Deployed Cloudflare Worker API and Workers AI binding. |
-| [demo1/rfi.mjs](demo1/rfi.mjs) | Full LLM system prompt in `instructions`, retrieved-context response schema, corpus mapping and response validation. |
-| [demo1/corpus.json](demo1/corpus.json) | Public-source summaries with attribution and source limitations. |
-| [demo1/corpus_for_manual_search.md](demo1/corpus_for_manual_search.md) | Readable version of the same source records and passages for manual search. |
-| [demo1/questions.json](demo1/questions.json) | The 12 participant-facing questions, without answers or scoring labels. |
-| [demo1/tasks.json](demo1/tasks.json) | The 12 tasks with reference answers and required elements for scoring. |
-| [demo1/generate-data.mjs](demo1/generate-data.mjs) | Validates the supplied data and rebuilds the participant questions and manual packet. |
-| [demo1/experiment_log_template.csv](demo1/experiment_log_template.csv) | Unfilled observation template for answers, evidence and timing. |
+| [demo/index.html](demo/index.html), [app.js](demo/app.js), [styles.css](demo/styles.css) | Demo interface for entering questions and reviewing answers with evidence. |
+| [demo/sources.html](demo/sources.html), [sources.js](demo/sources.js), [shared.js](demo/shared.js) | Separate corpus page, passage highlighting and shared browser helpers. |
+| [demo/retrieval.mjs](demo/retrieval.mjs), [retrieval.test.mjs](demo/retrieval.test.mjs) | Keyword passage retrieval and pipeline regression tests. |
+| [demo/wrangler.preview.json](demo/wrangler.preview.json) | Local preview using the existing Cloudflare login and a remote AI binding. |
+| [demo/server.mjs](demo/server.mjs) | Local Node.js server and AI requests using server-side environment variables. |
+| [demo/worker.mjs](demo/worker.mjs), [wrangler.json](demo/wrangler.json) | Deployed Cloudflare Worker API and Workers AI binding. |
+| [demo/rfi.mjs](demo/rfi.mjs) | Full LLM system prompt in `instructions`, retrieved-context response schema, corpus mapping and response validation. |
+| [demo/corpus.json](demo/corpus.json) | Public-source summaries with attribution and source limitations. |
+| [demo/corpus_for_manual_search.md](demo/corpus_for_manual_search.md) | Readable version of the same source records and passages for manual search. |
+| [demo/questions.json](demo/questions.json) | The 12 participant-facing questions, without answers or scoring labels. |
+| [demo/tasks.json](demo/tasks.json) | The 12 tasks with reference answers and required elements for scoring. |
+| [demo/generate-data.mjs](demo/generate-data.mjs) | Validates the supplied data and rebuilds the participant questions and manual packet. |
+| [demo/experiment_log_template.csv](demo/experiment_log_template.csv) | Unfilled observation template for answers, evidence and timing. |
 | [eval/lab.pdf](eval/lab.pdf) | Evaluation Lab worksheet with the team's reported run summaries and answer key. |
 | [eval/answer-key.json](eval/answer-key.json) | The ten-task answer-key table and scoring rules transcribed from the Lab. |
 | [interviews/carrie-dossick-notes.md](interviews/carrie-dossick-notes.md) | Team-provided interview preparation and notes, with the source document linked. |
 | [interviews/carrie-dossick-interview-record.md](interviews/carrie-dossick-interview-record.md) | Interview points organized by topic from the team notes, with paraphrased attribution. |
 | [feedback/class-feedback-summary.md](feedback/class-feedback-summary.md) | LLM-assisted summary of classroom feedback on Demo 1 and Demo 2. |
-| [demo1/build.mjs](demo1/build.mjs), [firebase.json](demo1/firebase.json) | Builds the demo assets and configures its Firebase Hosting site. |
+| [demo/build.mjs](demo/build.mjs), [firebase.json](demo/firebase.json) | Builds the demo assets and configures its Firebase Hosting site. |
 | `package.json` and `package-lock.json` in each application folder | Run commands and versioned dependencies. |
 
 ## Runtime and dependencies
@@ -64,7 +64,7 @@ The website uses React and Vite. The demo server and data preparation script use
 
 Open the live demo and type or paste a question into **Your question**, then click **Ask AI**. Review the answer and its supporting corpus passages. When the response identifies unresolved source differences, **Source differences** lists each source's claim with a passage link. The **Still missing** section identifies information the response could not establish.
 
-In the Demo 2 interface, open **View source corpus** to read the supplied passages. Citation links locate and highlight the cited passage. Returning to the question page restores the answer in the same browser tab. The manual packet is available through **Download manual search packet**. The 12 evaluation questions remain in `demo1/questions.json`; there is no question selector on the website.
+In the Demo 2 interface, open **View source corpus** to read the supplied passages. Citation links locate and highlight the cited passage. Returning to the question page restores the answer in the same browser tab. The manual packet is available through **Download manual search packet**. The 12 evaluation questions remain in `demo/questions.json`; there is no question selector on the website.
 
 ## Run locally
 
@@ -92,7 +92,7 @@ Open the local address printed by Vite to view the homepage. Run `npm run build`
 Open a separate terminal at the repository root. The following example uses PowerShell and an existing Cloudflare account with a token authorized to use Workers AI:
 
 ```powershell
-cd demo1
+cd demo
 npm ci
 $env:AI_PROVIDER = 'cloudflare'
 $env:CLOUDFLARE_ACCOUNT_ID = Read-Host 'Cloudflare account ID'
@@ -127,7 +127,7 @@ The task bank contains 8 directly answerable tasks. There are also 2 source-disa
 From the repository root:
 
 ```sh
-cd demo1
+cd demo
 npm run generate-data
 ```
 
@@ -149,7 +149,7 @@ Draft drawing dimensions from the 90% Design presentation were excluded because 
 
 ## Local Demo 2 preview
 
-After installing dependencies in `demo1/`, run `npm run preview` with an existing Cloudflare login. If authentication is needed, run `npx wrangler login` first. The preview is available at http://127.0.0.1:8792. This runs the interface and retrieval code locally and uses real Workers AI inference through the remote `AI` binding; it does not deploy the site or API. AI calls use the account's available allowance. Stop with Ctrl+C.
+After installing dependencies in `demo/`, run `npm run preview` with an existing Cloudflare login. If authentication is needed, run `npx wrangler login` first. The preview is available at http://127.0.0.1:8792. This runs the interface and retrieval code locally and uses real Workers AI inference through the remote `AI` binding; it does not deploy the site or API. AI calls use the account's available allowance. Stop with Ctrl+C.
 
 Run `npm test` for retrieval and API regression checks. These tests use simulated AI responses where needed and do not measure model accuracy.
 
@@ -163,7 +163,7 @@ In **Session records**, **Download CSV** exports one row per request for viewing
 
 The current model is `@cf/meta/llama-3.3-70b-instruct-fp8-fast`, accessed through Cloudflare Workers AI. The browser sends the current question to the backend. The backend uses weighted keyword overlap to select up to four passages before inference. Matching uses passage text, topic, publisher, title and source limitations, with a small generic term-alias list. The complete ranking and selected passage snapshots are returned in the trace. The model receives only the question and selected passages. This project does not train the model or use a vector search index. Retrieval is lexical and may miss paraphrases or relevant evidence; a miss does not establish absence from the whole corpus.
 
-The complete system prompt is the `instructions` variable in [demo1/rfi.mjs](demo1/rfi.mjs). It requires answers to use supplied passages and cite supporting passage IDs. It also requires the model to preserve attribution, flag unresolved source differences, and identify missing context or documents needed to resolve an RFI.
+The complete system prompt is the `instructions` variable in [demo/rfi.mjs](demo/rfi.mjs). It requires answers to use supplied passages and cite supporting passage IDs. It also requires the model to preserve attribution, flag unresolved source differences, and identify missing context or documents needed to resolve an RFI.
 
 `createAnswerSchema` in the same file defines `answer`, `citations`, `missingInformation` and `sourceDifferences`. Each source-difference entry contains a topic, source-attributed claims and an explanation. Its references must point to retrieved, cited passages from at least two distinct source documents. `worker.mjs` and `server.mjs` pass the prompt as a system message and serialize the current question with the retrieved passages as the user message. Citation IDs are restricted to that retrieved set. The trace records selected passage IDs separately from final citation IDs; it is an observable retrieval record, not hidden model reasoning.
 
@@ -173,7 +173,7 @@ The runtime does not load `tasks.json` or send reference answers to the model. R
 
 [eval/lab.pdf](eval/lab.pdf) contains the four-page **Evaluation Lab 10.22** tab from the [team document](https://docs.google.com/document/d/1mWZ5glFVbaz-HXh6wqxvimRZcSYoCS94IFlVUTWIhmA/edit?tab=t.ou87288eibor). It preserves the worksheet text, including its reported results for two AI runs and one manual keyword-search run.
 
-The Lab uses ten selected tasks from the twelve-question bank. [eval/answer-key.json](eval/answer-key.json) preserves its Step 2 reference table, clarifications and scoring rules, with the matching question text from `demo1/questions.json`. These reference answers are separate from participant responses and model outputs. The original source data and `demo1/tasks.json` remain unchanged.
+The Lab uses ten selected tasks from the twelve-question bank. [eval/answer-key.json](eval/answer-key.json) preserves its Step 2 reference table, clarifications and scoring rules, with the matching question text from `demo/questions.json`. These reference answers are separate from participant responses and model outputs. The original source data and `demo/tasks.json` remain unchanged.
 
 The Lab's fully grounded metric includes correct source support. The content-only protocol below is a different scoring definition for full-bank evaluation; its percentages are not interchangeable with the Lab's results. This snapshot contains the worksheet and reference key, without the original run exports or completed response sheets for those three runs.
 
@@ -210,7 +210,7 @@ Use the live links for review; deployment is not needed to run the local project
 From the repository root, deploy the API, then build and deploy the main website with its integrated demo:
 
 ```sh
-cd demo1
+cd demo
 npm ci
 npx wrangler login
 npm run deploy:api
@@ -221,11 +221,11 @@ npx firebase login
 npx firebase deploy --only hosting --project info492-sub-team-4 --config firebase.json
 ```
 
-The Worker uses the `AI` binding in `demo1/wrangler.json`. The main Hosting configuration selects site `info492-sub-team-4` and publishes the demo at `/demo/`. Its demo pages use the same Worker API as the standalone site. The API allows both main-site and standalone-site origins.
+The Worker uses the `AI` binding in `demo/wrangler.json`. The main Hosting configuration selects site `info492-sub-team-4` and publishes the demo at `/demo/`. Its demo pages use the same Worker API as the standalone site. The API allows both main-site and standalone-site origins.
 
-Inside `demo1/`, `npm run build` prepares only `index.html`, `sources.html`, `styles.css`, `app.js`, `sources.js`, `shared.js` and `corpus_for_manual_search.md` in `demo1/dist/`. It inserts the Worker origin from the build command into the frontend and updates the matching connection policy in `demo1/firebase.json`. The website build copies those public files into `website/dist/demo/`. The scoring key is not a published static file or an AI context source.
+Inside `demo/`, `npm run build` prepares only `index.html`, `sources.html`, `styles.css`, `app.js`, `sources.js`, `shared.js` and `corpus_for_manual_search.md` in `demo/dist/`. It inserts the Worker origin from the build command into the frontend and updates the matching connection policy in `demo/firebase.json`. The website build copies those public files into `website/dist/demo/`. The scoring key is not a published static file or an AI context source.
 
-The standalone demo remains available at its existing URL. To update it separately, run `npm run deploy:site` inside `demo1/`; that command selects Hosting site `info492-team4-demo1` and does not deploy the homepage.
+The standalone demo remains available at its existing URL. To update it separately, run `npm run deploy:site` inside `demo/`; that command selects Hosting site `info492-team4-demo1` and does not deploy the homepage.
 
 For a deployment to different accounts, update the Hosting site and project settings, the Worker name, and the API origins in the build scripts. Update `allowedOrigins` in `worker.mjs` to match the new frontend origins.
 
