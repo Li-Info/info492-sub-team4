@@ -7,9 +7,23 @@ The hypothesis is that AI assistance can improve information accuracy by at leas
 - [Team website](https://info492-sub-team-4.web.app/)
 - [Live Demo 2](https://info492-sub-team-4.web.app/demo/)
 - [Standalone demo](https://info492-team4-demo1.web.app/)
-- [Classroom feedback summary: Demo 1 and Demo 2](feedback/class-feedback-summary.md)
 
 The code in `demo1/` and the live demo use the Demo 2 iteration with passage retrieval and a separate source page. The team website opens the demo at `/demo/` in the same tab. The `demo1/` folder name and standalone demo URL are retained from Demo 1.
+
+## Mid-quarter Analysis submission materials
+
+| Requirement | Where to find it |
+| --- | --- |
+| Presentation | [Week 5 Mid-quarter Analysis slides](https://docs.google.com/presentation/d/1YIg74AzIheFEJqHieDm8K1FJuRT30m_OIslvaO4vurM/edit). A UW account is required. |
+| Interim paper | [Mid-quarter Analysis tab in the team document](https://docs.google.com/document/d/1mWZ5glFVbaz-HXh6wqxvimRZcSYoCS94IFlVUTWIhmA/edit?tab=t.7f1jffnywgf2). |
+| Individual contribution statements | At the end of the same [Mid-quarter Analysis tab](https://docs.google.com/document/d/1mWZ5glFVbaz-HXh6wqxvimRZcSYoCS94IFlVUTWIhmA/edit?tab=t.7f1jffnywgf2). |
+| Code and dependency files for the first two demos | [Demo 1 source snapshot](https://github.com/Li-Info/info492-sub-team4/tree/f958c4d87d82f6e6323ebce237b58f4254680858/demo1) and [Demo 2 source snapshot](https://github.com/Li-Info/info492-sub-team4/tree/34c14b4a538086a5665e746c2ac60f1d355f7a4f/demo1). Each includes `package.json` and `package-lock.json`. |
+| Data and preparation | [Source corpus](demo1/corpus.json), [manual search packet](demo1/corpus_for_manual_search.md), [task bank](demo1/tasks.json), [participant questions](demo1/questions.json) and [preparation script](demo1/generate-data.mjs). Data provenance and synthetic-task justification are [documented below](#data-and-synthetic-task-justification). |
+| LLM prompts | The `instructions` variable in [Demo 1's rfi.mjs](https://github.com/Li-Info/info492-sub-team4/blob/f958c4d87d82f6e6323ebce237b58f4254680858/demo1/rfi.mjs) and [Demo 2's rfi.mjs](https://github.com/Li-Info/info492-sub-team4/blob/34c14b4a538086a5665e746c2ac60f1d355f7a4f/demo1/rfi.mjs). The [current prompt](demo1/rfi.mjs) includes later updates. |
+| Stakeholder interview transcripts | [Edited interview record](interviews/carrie-dossick-interview-record.md) and [original team notes](interviews/carrie-dossick-notes.md). The edited record is based on notes, not a recording-based transcript. |
+| LLM summary of classroom feedback | [Demo 1 and Demo 2 classroom feedback summary](feedback/class-feedback-summary.md). |
+| Supporting evaluation materials | [Evaluation Lab worksheet](eval/lab.pdf) and [reference answer key](eval/answer-key.json). |
+| Setup and use | [Runtime and dependencies](#runtime-and-dependencies) and [local run instructions](#run-locally). |
 
 ## Repository structure
 
@@ -34,6 +48,8 @@ The repository root has no application package. Run installation and application
 | [demo1/experiment_log_template.csv](demo1/experiment_log_template.csv) | Unfilled observation template for answers, evidence and timing. |
 | [eval/lab.pdf](eval/lab.pdf) | Evaluation Lab worksheet with the team's reported run summaries and answer key. |
 | [eval/answer-key.json](eval/answer-key.json) | The ten-task answer-key table and scoring rules transcribed from the Lab. |
+| [interviews/carrie-dossick-notes.md](interviews/carrie-dossick-notes.md) | Team-provided interview preparation and notes, with the source document linked. |
+| [interviews/carrie-dossick-interview-record.md](interviews/carrie-dossick-interview-record.md) | Interview points organized by topic from the team notes, with paraphrased attribution. |
 | [feedback/class-feedback-summary.md](feedback/class-feedback-summary.md) | LLM-assisted summary of classroom feedback on Demo 1 and Demo 2. |
 | [demo1/build.mjs](demo1/build.mjs), [firebase.json](demo1/firebase.json) | Builds the demo assets and configures its Firebase Hosting site. |
 | `package.json` and `package-lock.json` in each application folder | Run commands and versioned dependencies. |
