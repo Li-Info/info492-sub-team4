@@ -1,7 +1,9 @@
+import { authenticate, review, runReceipt, roles } from "./access.mjs";
 import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
 import { dataset, questionBank, createAnswerSchema, prepareRun, pipelineVersion, instructions, HttpError, parseAnswer } from "./rfi.mjs";
 
+const accessEnv = { SESSION_SECRET: process.env.SESSION_SECRET };
 const host = "127.0.0.1";
 const port = Number(process.env.PORT || 8792);
 const provider = (process.env.AI_PROVIDER || "cloudflare").trim();
@@ -21,7 +23,9 @@ const staticFiles = new Map([
   ["/", ["index.html", "text/html; charset=utf-8"]],
   ["/styles.css", ["styles.css", "text/css; charset=utf-8"]],
   ["/app.js", ["app.js", "text/javascript; charset=utf-8"]],
+  ["/firebase-client.js", ["dist/firebase-client.js", "text/javascript; charset=utf-8"]],
   ["/shared.js", ["shared.js", "text/javascript; charset=utf-8"]],
+  ["/tour.js", ["tour.js", "text/javascript; charset=utf-8"]],
   ["/sources.js", ["sources.js", "text/javascript; charset=utf-8"]],
   ["/sources.html", ["sources.html", "text/html; charset=utf-8"]],
   ["/corpus_for_manual_search.md", ["corpus_for_manual_search.md", "text/markdown; charset=utf-8"]],
@@ -40,7 +44,7 @@ async function readJson(request) {
   const chunks = [];
   for await (const chunk of request) {
     length += chunk.length;
-    if (length > 8192) throw new HttpError(413, "The request is too large.");
+    if (length > 32768) throw new HttpError(413, "The request is too large.");
     chunks.push(chunk);
   }
   try {
@@ -155,7 +159,7 @@ const server = createServer(async (request, response) => {
   response.setHeader("X-Content-Type-Options", "nosniff");
   response.setHeader("Referrer-Policy", "no-referrer");
   response.setHeader("Cross-Origin-Resource-Policy", "same-origin");
-  response.setHeader("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'");
+  response.setHeader("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self' https://identitytoolkit.googleapis.com https://securetoken.googleapis.com; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'");
   try {
     if (![`${host}:${port}`, `localhost:${port}`].includes(request.headers.host)) throw new HttpError(403, "This sample only accepts local requests.");
     if (request.headers.origin && !allowedOrigins.has(request.headers.origin)) throw new HttpError(403, "This sample only accepts requests from its own page.");
@@ -180,8 +184,19 @@ const server = createServer(async (request, response) => {
       json(response, 200, { ready, provider, model, pipelineVersion });
       return;
     }
+    const accessRequest = () => new Request(`http://${host}:${port}${path}`, { headers: { Authorization: request.headers.authorization || "" } });
+    if (request.method === "GET" && path === "/api/session") {
+      json(response, 200, await authenticate(accessRequest(), accessEnv).then(session => ({ ...session, ...roles[session.role] })));
+      return;
+    }
+    if (request.method === "POST" && path === "/api/review") {
+      if (!allowedOrigins.has(request.headers.origin)) throw new HttpError(403, "Open the local demo to review an answer.");
+      json(response, 200, await review(await readJson(request), await authenticate(accessRequest(), accessEnv), accessEnv));
+      return;
+    }
     if (request.method === "POST" && path === "/api/ask") {
       if (!request.headers.origin || !allowedOrigins.has(request.headers.origin)) throw new HttpError(403, "Open the local sample page to ask a question.");
+      const session = await authenticate(accessRequest(), accessEnv);
       const body = await readJson(request);
       if (typeof body.question !== "string" || !body.question.trim() || body.question.trim().length > 1000) throw new HttpError(400, "Enter a question between 1 and 1000 characters.");
       if (activeRequest) throw new HttpError(429, "A question is already being processed. Please wait for the answer.");
@@ -195,7 +210,7 @@ const server = createServer(async (request, response) => {
         trace.aiRequestedAt = new Date().toISOString();
         trace.modelInputPassageIds = selectedDocuments.map(document => document.id);
         const result = await askAI(body.question.trim(), selectedDocuments);
-        json(response, 200, { ...result, model, durationMs: Math.round(performance.now() - started), trace: { ...trace, status: "completed", completedAt: new Date().toISOString(), citedPassageIds: result.sources.map(source => source.id) } });
+        json(response, 200, { ...result, runToken: await runReceipt(result, body.question.trim(), session, accessEnv), model, durationMs: Math.round(performance.now() - started), trace: { ...trace, status: "completed", completedAt: new Date().toISOString(), citedPassageIds: result.sources.map(source => source.id) } });
       } finally {
         activeRequest = false;
       }

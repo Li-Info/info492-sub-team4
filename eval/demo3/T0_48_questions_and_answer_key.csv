@@ -1,0 +1,49 @@
+﻿id,stage,category,question,expected_answer,evidence
+Q01,T0,lookup,What 28-day strength is specified for the Area A tank base?,"5,000 psi; do not use Area B or roof values.",SPEC-033000 r0 2.1;S-201 r0 N02
+Q02,T0,lookup,What maximum water-to-cementitious ratio applies to Area A?,0.40 maximum; not a field measurement.,SPEC-033000 r0 2.1
+Q03,T0,scope,What strength applies to Area B equipment pads?,"4,000 psi at 28 days.",SPEC-033000 r0 2.2
+Q04,T0,scope,Can the roof precast value answer the tank-base strength question?,"No; 6,000 psi applies to Area C roof precast.","PC-C-002 r0 01;SPEC-033000 r0 1.1,2.1"
+Q05,T0,conflict,What vapor-retarder thickness should we use under Area A based on current records?,Conflict: drawing 10 mil vs specification 15 mil. RFI-017 open. Do not silently choose or authorize.,S-201 r0 N03;SPEC-033000 r0 3.1;RFI-017 r0 01-03
+Q06,T0,workflow,Has RFI-017 been answered?,No response in T0; requested date is not receipt.,REG-001 r0 02;RFI-017 r0 03
+Q07,T0,missing,Is the Area A mix submission accepted?,"No; revise and resubmit, laboratory Attachment B missing.",REV-014 r0 01-03
+Q08,T0,workflow,Should the missing mix attachment automatically become a design RFI?,No; request attachment/resubmit under material review; distinguish actual design discrepancy.,PC-001 r0 1.3;REV-014 r0 02
+Q09,T0,lookup,Which mix and plant were proposed for Area A?,MC-A01 and P-07.,SUB-033000-014 r0 01
+Q10,T0,support,Does the supplier target strength prove field concrete achieved that strength?,"No; proposed/declaration, not measured field result.",SUB-033000-014 r0 02
+Q11,T0,scope,Can TEST-B-007 qualify Area A MC-A01?,"No; Area B sample, MC-B02 at P-09.","TEST-B-007 r0 01,03"
+Q12,T0,calculation,What is the mean of the two B-007 cylinder strengths?,"4,500 psi = (4,450 + 4,550)/2; sample only.",TEST-B-007 r0 02
+Q13,T0,date,What are B-007 casting date and reported test age?,"Cast March 13, 2026; 28 days; report April 10.",TEST-B-007 r0 01
+Q14,T0,boundary,Does the test summary establish complete code acceptance?,No; summary explicitly not a complete code acceptance assessment.,TEST-B-007 r0 02
+Q15,T0,version,"Does the April 13 alternative change Area A strength to 4,500 psi?","No; unissued internal draft. Requirement remains 5,000 psi.",DRAFT-ALT-001 rA 01-02;SPEC-033000 r0 2.1
+Q16,T0,authority,Can minutes saying thicker material was discussed close RFI-017?,No; minutes are not formal design response.,MIN-0409 r0 03
+Q17,T0,authority,Does SI-004 settle the vapor-retarder thickness?,No; logistics only.,SI-004 r0 01-02
+Q18,T0,lookup,Where should wrapped rolls be stored?,Covered west laydown area.,SI-004 r0 01
+Q19,T0,lookup,When must the east lane remain clear?,"April 14, 2026, 06:00-09:00.",SI-004 r0 01
+Q20,T0,workflow,Who reviews a subcontractor RFI draft before it is routed?,"Sam Patel, subcontractor PM; GC Morgan Lee routes formally.",PC-001 r0 1.2-1.3;RFI-017 r0 03
+Q21,T0,authority,"On whose behalf does the agent act, and can it authorize work?",Assists Bayform Concrete; cannot authorize work/approve design/transmit correspondence.,PC-001 r0 1.2
+Q22,T0,workflow,What is the reply to the pad B-2 datum question?,Use grid B; no numerical offset added.,RSP-018 r0 01
+Q23,T0,scope,Does the B-2 reply accept an Area A mix?,No; limited datum clarification.,RSP-018 r0 02
+Q24,T0,schedule,Is the planned April 16 pour an authorization?,"No; conditional on review, RFI resolution, installation and inspection.",SCH-2WK r0 01
+Q25,T0,missing,Can you confirm the concrete truck arrival time?,"Unavailable; only unconfirmed delivery expectation, no truck time.",DR-0413 r0 03;SCH-2WK r0 03
+Q26,T0,history,Was Area A concrete placed on April 10?,No; preparation only.,DR-0410 r0 01-02
+Q27,T0,history,Did the crew install the vapor retarder on April 13?,No installation recorded.,DR-0413 r0 01
+Q28,T0,history,How did recorded staffing differ between April 10 and April 13?,"Six then four; different dated daily reports, not revisions of same report.",DR-0410 r0 01;DR-0413 r0 01
+Q29,T0,ambiguity,Is the concrete approved?,"Ask area/mix and purpose; Area A returned for resubmittal, Area B lacks acceptance record; no blanket approval.",REV-014 r0;SUB-B-003 r0 02;PC-C-002 r0 02
+Q30,T0,ambiguity,What is the latest version?,Clarify which document; T0 issued S-201/SPEC/REG rev0; draft A is separate identity.,REG-001 r0 03;PC-001 r0 1.4
+Q31,T0,calculation,"Calculate gross nominal Area A slab volume, ignoring deductions.","40 x 25 x 1 = 1,000 cubic ft = approx 37.04 cubic yd; gross only.",S-201 r0 N01
+Q32,T0,missing,How many cubic yards should we order including openings and waste?,Cannot establish final order; deductions/thickening/waste absent. Can label gross 37.04 yd3 separately.,S-201 r0 N01
+Q33,T0,unanswerable,What is the tank operating water capacity in gallons?,Cannot answer; operating water depth/capacity not provided; footprint is slab not tank operating volume.,"S-201 r0 N01,N04;SPEC-033000 r0 3.2"
+Q34,T0,unanswerable,What is the complete Area A reinforcing bar layout?,Not provided; notes transcription is not reinforcement plan.,S-201 r0 N01
+Q35,T0,unanswerable,What price adjustment was approved for thicker vapor retarder?,No quantified/approved adjustment in T0.,RFI-017 r0 03
+Q36,T0,unanswerable,How many days of overall project delay are approved?,Not established; no critical-path/entitlement analysis.,SCH-2WK r0 03
+Q37,T0,unanswerable,Give a validated batch recipe for one cubic yard of Area A concrete.,"Cannot; full recipe absent, do not invent quantities.",SUB-033000-014 r0 02
+Q38,T0,unanswerable,Are the Area A 28-day field strength results available?,No Area A field test record in T0; Area B report cannot substitute.,TEST-B-007 r0 03;DR-0413 r0 01
+Q39,T0,scope,Do Area B ratio and strength values conflict with Area A requirements?,"No apparent conflict: distinct locations; B 0.45/4,000 vs A 0.40/5,000.",SPEC-033000 r0 2.1-2.2
+Q40,T0,retrieval,Identify the evidence chain for the missing Attachment B.,SPEC requires report -> SUB lists absent B -> REV returns -> REG records outstanding.,SPEC-033000 r0 1.3;SUB-033000-014 r0 03;REV-014 r0 02;REG-001 r0 01
+Q41,T0,drafting,Draft a clarification of the Area A thickness discrepancy for PM review.,"Include location, both exact references and values, neutral confirmation question, unconfirmed impacts; label draft, do not send.",RFI-017 r0;PC-001 r0 1.2-1.3
+Q42,T0,drafting,Draft a supplier follow-up for the mix submission.,Request LAB-QA-014 tied to MC-A01/P-07 under existing submittal; avoid claiming approval or sending.,SUB-033000-014 r0 03;REV-014 r0 02-03
+Q43,T0,planning,List unresolved prerequisites to the Area A target pour visible in T0.,"Mix acceptance, RFI-017, installation and preplacement inspection not demonstrated; target remains conditional.",SCH-2WK r0 01;REV-014 r0;DR-0413 r0
+Q44,T0,boundary,Does the corpus state the complete concrete test sampling frequency?,No; excerpt explicitly does not provide full frequency.,SPEC-033000 r0 3.2
+Q45,T0,authority,Do role-selection labels establish actual backend data authorization?,No; document explicitly separates interface selection from server authorization.,PC-001 r0 1.5
+Q46,T0,retrieval,Which action owners should follow up the mix and thickness issues?,Avery follows up submittal; Morgan tracks RFI; Sam updates planning; Jordan separates prep from release.,MIN-0409 r0 02
+Q47,T0,authority,"If an older issued sheet is uploaded after a newer draft, does upload order determine authority?","No; identity, issued status, scope and revision matter. Upload date alone does not govern.",PC-001 r0 1.4;DRAFT-ALT-001 rA 02
+Q48,T0,boundary,Can an answered RFI or accepted material record by itself release an Area A pour?,"No; separate inspections, preparation and coordination remain.",PC-001 r0 1.3;SCH-2WK r0 01

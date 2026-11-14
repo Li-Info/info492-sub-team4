@@ -7,16 +7,24 @@
     "node": ">=24.18.0 <25"
   },
   "scripts": {
-    "test": "node --test retrieval.test.mjs",
+    "test": "node --test *.test.mjs",
     "preview": "node build.mjs --local && wrangler dev --config wrangler.preview.json --ip 127.0.0.1 --port 8792",
-    "start": "node server.mjs",
+    "start": "npm run preview",
+    "db:local": "wrangler d1 execute info492-demo3 --local --file schema.sql",
     "generate-data": "node generate-data.mjs",
-    "build": "node build.mjs https://info492-demo1-api.info492-sample.workers.dev",
+    "build": "node ../website/build.mjs",
     "deploy:api": "wrangler deploy --config wrangler.json",
-    "deploy:site": "npm run build && firebase deploy --only hosting --project info492-sub-team-4 --config firebase.json"
+    "deploy:site": "npm run build && firebase deploy --only hosting --project info492-sub-team-4 --config ../website/firebase.json"
   },
   "devDependencies": {
+    "esbuild": "0.28.2",
     "firebase-tools": "15.34.0",
     "wrangler": "4.151.0"
+  },
+  "dependencies": {
+    "firebase": "13.3.0",
+    "jose": "6.2.3",
+    "mammoth": "1.13.0",
+    "pdfjs-dist": "6.5.438"
   }
 }

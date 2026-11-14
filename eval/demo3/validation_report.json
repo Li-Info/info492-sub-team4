@@ -1,0 +1,14 @@
+{
+  "record_count": 24,
+  "T0": 18,
+  "T1": 3,
+  "T2": 3,
+  "question_count": 48,
+  "continuous_event_count": 12,
+  "pdf_text_extraction": "pass",
+  "unique_document_revision": "pass",
+  "sample_ages_and_means": "pass",
+  "professional_technical_validation": "not_performed",
+  "pdf_pages": 24,
+  "visual_review": "24 rendered pages inspected; no clipping or overlap observed"
+}

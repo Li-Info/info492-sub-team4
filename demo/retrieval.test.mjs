@@ -2,7 +2,16 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { retrievePassages } from "./retrieval.mjs";
 import { dataset, parseAnswer, createAnswerSchema } from "./rfi.mjs";
-import worker from "./worker.mjs";
+import { testDatabase } from "./storage-fixtures.mjs";
+import workerCore from "./worker.mjs";
+import { testToken, mockFirebaseKeys } from "./test-fixtures.mjs";
+mockFirebaseKeys();
+const testAccess = { SESSION_SECRET: "test-session-secret-for-pipeline-checks-only" };
+const worker = { async fetch(request, env) {
+  const headers = new Headers(request.headers);
+  headers.set("Authorization", `Bearer ${await testToken()}`);
+  return workerCore.fetch(new Request(request, { headers }), { ...env, ...testAccess, DB: testDatabase() });
+} };
 import { recordsToCsv } from "./shared.js";
 
 test("retrieval is deterministic, bounded and does not mutate the corpus", () => {
@@ -36,13 +45,13 @@ test("worker sends only retrieved passages and returns the actual selection", as
   let modelInput;
   const response = await worker.fetch(questionRequest("tank capacity"), {
     AI: { async run(model, input) {
-      modelInput = JSON.parse(input.messages[1].content);
+      const content = JSON.parse(input.messages[1].content); if (!content.documents) return { response: { tool: "finish", query: "" } }; modelInput = content;
       return { response: JSON.stringify({ answer: "Test response.", citations: [modelInput.documents[0].id], missingInformation: [], sourceDifferences: [] }) };
     } },
   });
   assert.equal(response.status, 200);
   const result = await response.json();
-  assert.equal(modelInput.documents.length, 4);
+  assert.equal(modelInput.documents.length, 6);
   assert.deepEqual(modelInput.documents.map(passage => passage.id), result.trace.modelInputPassageIds);
   assert.deepEqual(result.trace.retrieval.passages, modelInput.documents);
   assert.deepEqual(result.trace.citedPassageIds, [modelInput.documents[0].id]);
@@ -54,20 +63,20 @@ test("a retrieval miss is retained and never calls AI", async () => {
   let called = false;
   const response = await worker.fetch(questionRequest("zxqvzz"), { AI: { async run() { called = true; } } });
   const result = await response.json();
-  assert.equal(response.status, 422);
+  assert.equal(response.status, 200);
   assert.equal(called, false);
   assert.equal(result.trace.retrieval.passages.length, 0);
-  assert.equal(result.trace.status, "failed");
-  assert.equal(result.trace.modelInputPassageIds, undefined);
+  assert.equal(result.trace.status, "completed");
+  assert.deepEqual(result.trace.modelInputPassageIds, []);
 });
 
 test("a model failure preserves the retrieval trace", async () => {
   const response = await worker.fetch(questionRequest("tank capacity"), { AI: { async run() { throw new Error("Unavailable"); } } });
   const result = await response.json();
   assert.equal(response.status, 503);
-  assert.equal(result.trace.retrieval.passages.length, 4);
+  assert.equal(result.trace.retrieval.passages.length, 6);
   assert.equal(result.trace.status, "failed");
-  assert.equal(result.trace.modelInputPassageIds.length, 4);
+  assert.equal(result.trace.modelInputPassageIds.length, 0);
 });
 
 test("local preview does not allow another site's origin", async () => {
@@ -82,7 +91,7 @@ test("the main team website can use the demo API", async () => {
     const request = new Request("https://api.example.com/api/ask", { method: "POST", headers: { "Content-Type": "application/json", Origin: origin }, body: JSON.stringify({ question: "tank capacity" }) });
     const response = await worker.fetch(request, {
       AI: { async run(model, input) {
-        const documents = JSON.parse(input.messages[1].content).documents;
+        const content = JSON.parse(input.messages[1].content); if (!content.documents) return { response: { tool: "finish", query: "" } }; const documents = content.documents;
         return { response: JSON.stringify({ answer: "Test response.", citations: [documents[0].id], missingInformation: [], sourceDifferences: [] }) };
       } },
     });
@@ -137,7 +146,7 @@ test("source differences require distinct documents and nonduplicate claims", ()
 test("invalid difference output retains the actual supplied passages in a failed request", async () => {
   const response = await worker.fetch(questionRequest("tank capacity"), {
     AI: { async run(model, input) {
-      const documents = JSON.parse(input.messages[1].content).documents;
+      const content = JSON.parse(input.messages[1].content); if (!content.documents) return { response: { tool: "finish", query: "" } }; const documents = content.documents;
       const value = differenceResponse([documents[0].id]);
       return { response: JSON.stringify(value) };
     } },
@@ -145,7 +154,7 @@ test("invalid difference output retains the actual supplied passages in a failed
   const result = await response.json();
   assert.equal(response.status, 502);
   assert.equal(result.trace.status, "failed");
-  assert.equal(result.trace.modelInputPassageIds.length, 4);
+  assert.equal(result.trace.modelInputPassageIds.length, 6);
   assert.deepEqual(result.trace.citedPassageIds, []);
 });
 

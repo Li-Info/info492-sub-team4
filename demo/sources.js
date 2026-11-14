@@ -118,7 +118,7 @@ async function load() {
   } catch {
     const error = document.querySelector("#corpus-error");
     error.hidden = false;
-    error.textContent = "The source corpus could not be loaded. Reload the page to try again.";
+    error.textContent = "The project documents could not be loaded. Reload the page to try again.";
     document.querySelector("#corpus-count").textContent = "Corpus unavailable";
   }
 }

@@ -1,0 +1,12 @@
+{"id": "E01", "stage": "T0", "action": "Save Q07 and Q05 as watched items", "expected": "Persist evidence ids/revisions and pending states; human decision unchanged."}
+{"id": "E02", "stage": "T1", "action": "Upload SUB Rev1 only", "expected": "Report resubmission; do not claim attachment read or acceptance."}
+{"id": "E03", "stage": "T1", "action": "Upload LAB-QA-014", "expected": "Missing evidence now present after indexing; reviewer acceptance still absent."}
+{"id": "E04", "stage": "T1", "action": "Upload REV-014 Rev1", "expected": "Notify watched mix issue changed to accepted-as-noted; do not close thickness or authorize pour."}
+{"id": "E05", "stage": "T1", "action": "Run scheduled scan with no document changes", "expected": "No duplicate change notification; record completed check."}
+{"id": "E06", "stage": "T2", "action": "Upload S-201 Rev1 before reply", "expected": "Detect issued change 10 to 15 mil; geometry/strength unchanged; do not invent received RFI reply."}
+{"id": "E07", "stage": "T2", "action": "Upload RSP-017 and REG Rev1", "expected": "Thickness evidence resolved; notify affected item; require human acknowledgement, retain earlier evidence."}
+{"id": "E08", "stage": "T2", "action": "Reupload byte-identical S-201 Rev1", "expected": "Deduplicate by identity/hash; no new substantive alert."}
+{"id": "E09", "stage": "T2", "action": "Reupload Area C record unchanged", "expected": "No Area A substantive alert; unrelated scope."}
+{"id": "E10", "stage": "T2", "action": "Simulate index failure for an upload in isolated reset", "expected": "Show ingestion failed/pending; do not claim content reviewed; retry after recovery."}
+{"id": "E11", "stage": "T2", "action": "Close browser then trigger scheduler in supported backend", "expected": "Only claim continuous backend behavior if run logs show execution and persisted result before browser reopens."}
+{"id": "E12", "stage": "T2", "action": "Pause watch, trigger scan, resume watch", "expected": "No action while paused; catch up after resume; no duplicate alerts or overwritten human decision."}

@@ -3,6 +3,8 @@
   "main": "worker.mjs",
   "compatibility_date": "2026-10-14",
   "workers_dev": true,
+  "d1_databases": [{ "binding": "DB", "database_name": "info492-demo3", "database_id": "b6a68450-08bd-462c-9af5-4abc280ed9df" }],
+  "triggers": { "crons": ["*/5 * * * *"] },
   "ai": {
     "binding": "AI"
   }

@@ -2,13 +2,50 @@
 
 This repository contains the team website and RFI retrieval demo for a pilot study of AI-assisted information retrieval when preparing construction RFIs from a subcontractor's perspective. The project context is the Seattle Aquarium Ocean Pavilion.
 
-The hypothesis is that AI assistance can improve information accuracy by at least 10% compared with manual search using the same documents. The evaluation worksheet records the team's reported pilot findings for a selected task set.
+The project tests whether AI-assisted retrieval improves RFI information accuracy compared with manual search using the same documents. The initial demos used a 10% improvement hypothesis. The Demo 3 submission note states a later target of 15 percentage points. These targets and evaluation stages should not be treated as interchangeable.
 
 - [Team website](https://info492-sub-team-4.web.app/)
-- [Live Demo 2](https://info492-sub-team-4.web.app/demo/)
-- [Standalone demo](https://info492-team4-demo1.web.app/)
+- [Live Demo 3](https://info492-sub-team-4.web.app/demo/)
 
-The code in `demo/` contains the current retrieval workflow and source page. The team website opens the demo at `/demo/` in the same tab. Historical snapshots retain the original `demo1/` folder name, and the standalone demo URL is unchanged.
+The homepage's **Try Demo 3** button opens `/demo/` on the same team website. This is the current submission website. Historical snapshots retain the original `demo1/` folder name.
+
+## Demo 3 submission materials
+
+| Requirement | Where to find it |
+| --- | --- |
+| Working system | [Team website](https://info492-sub-team-4.web.app/) and [Demo 3](https://info492-sub-team-4.web.app/demo/). Sign-in provides the Foreman, Project Engineer and Project Manager views. |
+| Presentation | [Slides linked from the team's Demo 3 submission tab](https://docs.google.com/presentation/d/1YIg74AzIheFEJqHieDm8K1FJuRT30m_OIslvaO4vurM/edit). |
+| Demo note, reported evaluation and individual contributions | [Coordination Demo 3 tab](https://docs.google.com/document/d/1mWZ5glFVbaz-HXh6wqxvimRZcSYoCS94IFlVUTWIhmA/edit?tab=t.hr9ed8rs6cu2). |
+| Stakeholder input | [Carrie Cassidy interview notes](https://docs.google.com/document/d/1mWZ5glFVbaz-HXh6wqxvimRZcSYoCS94IFlVUTWIhmA/edit?tab=t.uc701a695nh2), including feedback after a webpage demonstration. These are interview notes, not a recording-based transcript. |
+| Course feedback | [Feedback 11.12](https://docs.google.com/document/d/1mWZ5glFVbaz-HXh6wqxvimRZcSYoCS94IFlVUTWIhmA/edit?tab=t.vubg0m95p0nu). |
+| Code | [Interface](demo/app.js), [Worker API](demo/worker.mjs), [retrieval agent](demo/agent.mjs), [project storage and permissions](demo/project-api.mjs), [background monitoring](demo/monitor.mjs) and [database schema](demo/schema.sql). |
+| Source data | [T0: initial 18 PDFs](demo/data/demo3-synthetic-v1/T0/), [T1: three staged update PDFs](demo/data/demo3-synthetic-v1/T1/) and [T2: three staged update PDFs](demo/data/demo3-synthetic-v1/T2/). |
+| Evaluation inputs | [48 candidate questions and answer key](eval/demo3/T0_48_questions_and_answer_key.csv), [ground truth](eval/demo3/ground_truth.json), [12 planned update events](eval/demo3/continuous_events.jsonl) and [package consistency report](eval/demo3/validation_report.json). These supplied files are preserved unchanged. |
+| LLM prompts | [Project-document system prompt](demo/project-instructions.mjs), [agent tool-choice prompt](demo/agent.mjs), [evidence-change comparison prompt](demo/monitor.mjs) and [earlier public-corpus prompt](demo/rfi.mjs). |
+| Dependencies and commands | [Demo package](demo/package.json), [demo lockfile](demo/package-lock.json), [homepage package](website/package.json), [homepage lockfile](website/package-lock.json) and the [run instructions below](#run-locally). |
+
+The submission note reports 47 main evaluation tasks and one separately handled system-boundary question. Its result summary is team reported; the raw responses and completed per-task scoring sheets for that comparison are not included in this repository. The candidate answer key and static package consistency report are not experimental outputs. Automated software checks do not independently verify the reported accuracy or establish the thesis.
+
+## Demo 3 workspace
+
+The current shared demo uses the team-supplied **Demo3_Synthetic_Data_v1** package for the fictional Cedar Cove Aquarium Annex, with Bayform Concrete as the simulated subcontractor. Its initial corpus contains only the 18 T0 PDFs in [demo/data/demo3-synthetic-v1/T0/](demo/data/demo3-synthetic-v1/T0/). The original PDF bytes are preserved. These are synthetic training records marked NOT FOR CONSTRUCTION, not Ocean Pavilion project records or professionally validated design documents.
+
+The three public demo accounts are assigned to a fresh project that retrieves only its uploaded files. Earlier project data and history remain separate. The package's T1 and T2 documents are included as staged update-test inputs; storing them in Git does not upload them to the project's searchable corpus. TXT alternatives are not imported alongside the PDFs. Evaluator questions, answer keys and the package manifest are not part of the retrieval corpus. The supplied package did not include its original document-generation script. The historical `generate-data.mjs` prepares the earlier public-source task packet; it does not generate these synthetic PDFs.
+
+
+The three roles are internal positions within a **Concrete Subcontractor**: Foreman, Project Engineer and Project Manager. The Project Engineer is the main persona. Firebase email/password sign-in establishes identity; server-assigned claims and active project membership control access. The sign-in page displays three public demonstration accounts with their assigned role names. The account determines the authorized role after login; there is no role selector or self-registration interface. These accounts use a separate shared demo project intended for sample documents. Private project accounts remain separate. A project administrator assigns project membership and matching Firebase claims.
+
+Foremen ask field questions and flag items for team review. Project Engineers manage uploaded files, check evidence and monitor their saved questions. Project Managers review explicitly shared records and record an internal RFI-preparation decision. These actions do not approve construction or send an RFI. All roles search the same evidence within their assigned project; the role changes the view and allowed actions, not the underlying facts.
+
+Answers use warning text for missing information or source differences. Human review starts with **Select a review decision**. Reviews append the actor, role, time and notes without replacing the AI answer. Saved answer and citation snapshots persist in Cloudflare D1 across sign-out. Only an owner or an assigned teammate with an explicitly shared record can access it.
+
+**Project files** accepts searchable PDF, DOCX, TXT, MD, CSV and JSON files up to 10 MiB per file (shown as 10 MB), with at most 1,500,000 UTF-8 bytes of extracted text and 100 PDF pages. PDF text keeps page markers; DOCX extraction does not invent page numbers. Scanned documents need OCR first. Extraction happens in the browser. The original file and metadata use a multipart upload; the backend verifies the original SHA-256 hash and saves base64-encoded file parts in separate D1 rows within the same indexing transaction. Original downloads stream the decoded parts and support files saved by the earlier version. Oversized files or extracted text are rejected before saving; text is not silently truncated. Duplicate content is flagged. The user chooses a separate document or a new version of an existing document and confirms keeping a duplicate. Internal V1/V2 numbering is separate from formal revision labels. Previous versions remain available. Setting the current search version requires an explicit choice; upload time alone does not establish applicability or approval. File types and approval labels are user supplied, not independently verified.
+
+**Save and monitor updates** starts an account-owned background task. Ready-file events enter a persistent queue; a five-minute cron also checks for missed events. Each check verifies the owner's project access, compares evidence and saves its actual activity. Meaningful changes enter **Updates to review**; no-change checks only enter the log. Monitoring state, check state and human review are stored separately. A failed check keeps its event position and has two automatic retries. Users can pause, archive or manually retry failed checks. Checks process up to two queued items per worker invocation, so queued work can delay the next completed check. No notification is a guarantee that all changes were found. This implementation does not establish hours of successful operation or measured reminder accuracy.
+
+The system does not connect to Autodesk or Procore. Uploaded synthetic demonstrations must be labelled as such and kept distinct from public-source summaries and real project records. Original evaluation data and scoring rules remain unchanged.
+
+[demo/firebase-config.js](demo/firebase-config.js) contains public Firebase web-app identifiers. Passwords go to Firebase, not the AI. The three public sample credentials in `demo/demo-accounts.js` are intentionally displayed on the sign-in page. Private account passwords and deployment credentials must stay outside Git.
 
 ## Mid-quarter Analysis submission materials
 
@@ -31,15 +68,22 @@ The repository root has no application package. Run installation and application
 
 | Path | Purpose |
 | --- | --- |
-| [website/](website/) | React and Vite source for the team website, including its internal Demo 2 link. |
+| [website/](website/) | React and Vite source for the team website, including its internal demo link. |
 | [website/build.mjs](website/build.mjs), [firebase.json](website/firebase.json) | Builds the homepage with the demo under `/demo/` and configures the main Hosting site. |
 | [demo/index.html](demo/index.html), [app.js](demo/app.js), [styles.css](demo/styles.css) | Demo interface for entering questions and reviewing answers with evidence. |
 | [demo/sources.html](demo/sources.html), [sources.js](demo/sources.js), [shared.js](demo/shared.js) | Separate corpus page, passage highlighting and shared browser helpers. |
+| [demo/firebase-client.js](demo/firebase-client.js), [firebase-config.js](demo/firebase-config.js), [firebase-token.mjs](demo/firebase-token.mjs), [access.mjs](demo/access.mjs) | Firebase email/password sign-in, server token verification and account-bound review permissions. |
+| [demo/files.html](demo/files.html), [files.js](demo/files.js), [file-parser.js](demo/file-parser.js) | Authenticated uploads, duplicate confirmation, version history and text comparison. |
+| [demo/file-storage.mjs](demo/file-storage.mjs), [upload-limits.js](demo/upload-limits.js), [upload.test.mjs](demo/upload.test.mjs) | Bounded multipart uploads, original-file parts, streaming downloads and size/access regression checks. |
+| [demo/agent.mjs](demo/agent.mjs), [monitor.mjs](demo/monitor.mjs) | Bounded retrieval tool choices and background evidence-change checks. |
+| [demo/schema.sql](demo/schema.sql), [project-data.mjs](demo/project-data.mjs), [project-api.mjs](demo/project-api.mjs) | D1 schema, project access, persistent records and file events. |
+| [demo/project-ui.js](demo/project-ui.js), [project.test.mjs](demo/project.test.mjs) | Monitoring interface and permission/version/queue regression checks. |
 | [demo/retrieval.mjs](demo/retrieval.mjs), [retrieval.test.mjs](demo/retrieval.test.mjs) | Keyword passage retrieval and pipeline regression tests. |
 | [demo/wrangler.preview.json](demo/wrangler.preview.json) | Local preview using the existing Cloudflare login and a remote AI binding. |
 | [demo/server.mjs](demo/server.mjs) | Local Node.js server and AI requests using server-side environment variables. |
 | [demo/worker.mjs](demo/worker.mjs), [wrangler.json](demo/wrangler.json) | Deployed Cloudflare Worker API and Workers AI binding. |
 | [demo/rfi.mjs](demo/rfi.mjs) | Full LLM system prompt in `instructions`, retrieved-context response schema, corpus mapping and response validation. |
+| [demo/data/demo3-synthetic-v1/T0/](demo/data/demo3-synthetic-v1/T0/), [project-instructions.mjs](demo/project-instructions.mjs), [project-corpus.test.mjs](demo/project-corpus.test.mjs) | Initial synthetic PDFs, the project-document prompt and corpus-isolation checks. |
 | [demo/corpus.json](demo/corpus.json) | Public-source summaries with attribution and source limitations. |
 | [demo/corpus_for_manual_search.md](demo/corpus_for_manual_search.md) | Readable version of the same source records and passages for manual search. |
 | [demo/questions.json](demo/questions.json) | The 12 participant-facing questions, without answers or scoring labels. |
@@ -51,20 +95,24 @@ The repository root has no application package. Run installation and application
 | [interviews/carrie-dossick-notes.md](interviews/carrie-dossick-notes.md) | Team-provided interview preparation and notes, with the source document linked. |
 | [interviews/carrie-dossick-interview-record.md](interviews/carrie-dossick-interview-record.md) | Interview points organized by topic from the team notes, with paraphrased attribution. |
 | [feedback/class-feedback-summary.md](feedback/class-feedback-summary.md) | LLM-assisted summary of classroom feedback on Demo 1 and Demo 2. |
-| [demo/build.mjs](demo/build.mjs), [firebase.json](demo/firebase.json) | Builds the demo assets and configures its Firebase Hosting site. |
+| [demo/build.mjs](demo/build.mjs), [firebase.json](demo/firebase.json) | Builds demo assets and selects the existing team Hosting site and integrated build output. |
 | `package.json` and `package-lock.json` in each application folder | Run commands and versioned dependencies. |
 
 ## Runtime and dependencies
 
 Use Node.js 24.18.0 or a later Node.js 24 release. The demo requires Node.js below version 25. The development environment used Node.js 24.18.0 and npm 11.16.0.
 
-The website uses React and Vite. The demo server and data preparation script use Node.js built-in modules. The demo's deployment tools are Firebase CLI 15.34.0 and Wrangler 4.151.0. Each application's `package-lock.json` records its resolved dependencies; use `npm ci` to install them.
+The website uses React and Vite. The data preparation script uses Node.js built-in modules. The demo server also uses jose for Firebase token verification. The demo's deployment tools are Firebase CLI 15.34.0 and Wrangler 4.151.0. Each application's `package-lock.json` records its resolved dependencies; use `npm ci` to install them.
 
 ## Use the live demo
 
-Open the live demo and type or paste a question into **Your question**, then click **Ask AI**. Review the answer and its supporting corpus passages. When the response identifies unresolved source differences, **Source differences** lists each source's claim with a passage link. The **Still missing** section identifies information the response could not establish.
+Open the live demo, choose **Use this account** under one of the three sample accounts, then select **Sign in**. The assigned role appears after login. Then type or paste a question into **Your question**, then click **Ask AI**. Review the answer and its supporting corpus passages. When the response identifies unresolved source differences, **Source differences** lists each source's claim with a passage link. The **Still missing** section identifies information the response could not establish.
 
-In the Demo 2 interface, open **View source corpus** to read the supplied passages. Citation links locate and highlight the cited passage. Returning to the question page restores the answer in the same browser tab. The manual packet is available through **Download manual search packet**. The 12 evaluation questions remain in `demo/questions.json`; there is no question selector on the website.
+In the current synthetic project, **Browse source documents** opens the uploaded files and their versions. Citation links open the relevant version and highlight the cited passage. Earlier public-corpus projects retain **Browse public sources** and the manual packet. The historical 12 questions in `demo/questions.json` are separate from the 48 Demo 3 candidate cases in `eval/demo3/`; there is no question selector on the website.
+
+Search history shows the latest four loaded records first. **Show all** expands the list and **Show less** collapses it. CSV and JSON downloads retain all loaded records; the history API currently loads up to 100 accessible records. A Foreman can open a saved answer, choose **Flag for project team review**, add a note and save it. This shares the item with the assigned team; the Project Manager can see it after refreshing the page. Reviewing an existing record does not require a new AI inference.
+
+AI requests depend on the Cloudflare account's available Workers AI allowance. A configured connection does not guarantee remaining inference capacity. Allowance exhaustion is recorded as a failed request, not a successful answer. The interface can still display saved records when no new inference allowance is available.
 
 ## Run locally
 
@@ -80,37 +128,34 @@ cd info492-sub-team4
 From the repository root:
 
 ```sh
-cd website
+cd demo
+npm ci
+cd ../website
 npm ci
 npm run dev
 ```
 
-Open the local address printed by Vite to view the homepage. Run `npm run build` to build the homepage and copy the demo into `website/dist/demo/`. `npm run preview` serves the resulting static pages. For local AI testing, use the demo preview described below; the deployed API accepts requests from the published site origins.
+Open the local address printed by Vite to view the homepage. Run `npm run build` inside `website/` to build the homepage and copy the demo into `website/dist/demo/`. `npm run preview` serves the resulting static pages. For local AI testing, use the demo preview described below; the deployed API accepts requests from the published site origins.
 
-### Demo 2
+### Demo
 
-Open a separate terminal at the repository root. The following example uses PowerShell and an existing Cloudflare account with a token authorized to use Workers AI:
+The full Demo 3 preview uses Wrangler with local D1 storage and a remote Workers AI binding. Use a Cloudflare login authorized for Workers, D1 and AI, and enable Firebase email/password sign-in for the configured project.
 
 ```powershell
 cd demo
 npm ci
-$env:AI_PROVIDER = 'cloudflare'
-$env:CLOUDFLARE_ACCOUNT_ID = Read-Host 'Cloudflare account ID'
-$tokenInput = Read-Host 'Cloudflare API token' -AsSecureString
-$env:CLOUDFLARE_API_TOKEN = [System.Net.NetworkCredential]::new('', $tokenInput).Password
-Remove-Variable tokenInput
+npx wrangler login
+npm run db:local
 npm start
 ```
 
-Open [http://127.0.0.1:8792](http://127.0.0.1:8792). Stop the server with Ctrl+C. If the port is occupied, set `$env:PORT` to an available port before starting.
+Open http://127.0.0.1:8792 and stop with Ctrl+C. The preview uses a local database; cloud project records are not copied automatically. An administrator must seed local shared-project membership for accounts with an assigned shared-project claim. Existing private accounts initialize their own project. The preview has no self-registration interface. Local scheduled events can be tested by adding `--test-scheduled` to the Wrangler command and invoking its documented scheduled-event endpoint. A local preview stops when Wrangler stops; continuous monitoring requires the deployed Worker and cron.
 
-Credentials stay in the server process environment. Do not put tokens in source files or frontend JavaScript. Close the terminal when finished to discard the session variables. `server.mjs` reads environment variables directly and does not automatically load `.env` files.
-
-The local server can serve the page and corpus without AI credentials. Real AI answers require valid credentials and model access. The deployed demo uses the Worker's `AI` binding instead of the local server's API token.
+`server.mjs` is the earlier standalone Node server. It does not implement D1 file storage, shared history or continuous monitoring; use Wrangler for the current interface.
 
 ## Data and synthetic task justification
 
-This package prepares a small, source-attributed corpus of publicly reported Ocean Pavilion information, first used in Demo 1 and retained for Demo 2. The deployed application uses these records.
+This package prepares a small, source-attributed corpus of publicly reported Ocean Pavilion information, first used in Demo 1 and retained for Demo 2. These records remain available for the earlier demos and public-corpus projects; they are excluded from the current isolated Demo 3 corpus.
 
 The project facts come from real public sources, but the retrieval chunks are concise paraphrases rather than complete copies of the linked documents. The 12 RFI-style prompts are synthetic evaluation tasks, not real project RFIs. The corpus does not contain approved construction specifications, material submittals, inspection acceptance criteria, or actual project RFIs. A case report that says a product or material was used must be reported as a source-attributed project claim, not upgraded into an approved requirement.
 
@@ -147,23 +192,23 @@ npm run generate-data
 
 Draft drawing dimensions from the 90% Design presentation were excluded because they had not been verified against the PDF pages during preparation. EIS scoping material was not used as a concrete technical source, and permit records were not incorporated through the original portal lookup. Verify original documents before expanding the corpus with these materials.
 
-## Local Demo 2 preview
+## Local demo preview
 
-After installing dependencies in `demo/`, run `npm run preview` with an existing Cloudflare login. If authentication is needed, run `npx wrangler login` first. The preview is available at http://127.0.0.1:8792. This runs the interface and retrieval code locally and uses real Workers AI inference through the remote `AI` binding; it does not deploy the site or API. AI calls use the account's available allowance. Stop with Ctrl+C.
+Use the Wrangler setup above. The preview runs local application code with real Workers AI inference through the remote binding. It does not deploy the site or API. Cloudflare service access and available allowance are required.
 
 Run `npm test` for retrieval and API regression checks. These tests use simulated AI responses where needed and do not measure model accuracy.
 
 The **Retrieval record** is collapsed by default. Expand it to compare the retrieved passages with those actually sent to the AI and those cited in the answer. The ranked passage cards show the same stage labels and allow the evidence to be opened. Source-specific limitations remain on the source page.
 
-In **Session records**, **Download CSV** exports one row per request for viewing in Excel or another spreadsheet application. Columns contain the question and AI answer, separate passage IDs for **Retrieved passages**, **Sent to AI** and **Cited passages**, missing information and source differences, request seconds, status and errors. **Score** and **Notes** are blank for human assessment. Failed requests remain in the export. CSV files use UTF-8 with a byte-order mark and quote multiline text.
+In **Search history**, **Download CSV** exports one row per request for viewing in Excel or another spreadsheet application. Columns contain the question and AI answer, separate passage IDs for **Retrieved passages**, **Sent to AI** and **Cited passages**, missing information and source differences, request seconds, status and errors. **Score** and **Notes** are blank for human assessment. Failed requests remain in the export. CSV files use UTF-8 with a byte-order mark and quote multiline text.
 
-**Raw JSON** retains the complete original records, including passage snapshots, candidate rankings, supplied and cited passage IDs, source differences, timestamps and failures. Both downloads are snapshots of all requests in the current tab; downloading does not clear them. Request seconds measure the browser request, including network time, and exclude participant reading and evidence review. Keyword match scores measure lexical overlap, not answer correctness; detailed scores and search terms remain in the raw records.
+**Raw JSON** retains the complete original records, including passage snapshots, candidate rankings, supplied and cited passage IDs, source differences, timestamps and failures. Both downloads are snapshots of the loaded account history and any failed requests retained in the current tab; downloading does not clear them. Successful request seconds measure the server retrieval-and-inference pipeline and exclude browser network overhead, participant reading and evidence review. A failed browser request uses its observed request duration when no pipeline duration is available. Keyword match scores measure lexical overlap, not answer correctness; detailed scores and search terms remain in the raw records.
 
 ## AI workflow and LLM prompts
 
-The current model is `@cf/meta/llama-3.3-70b-instruct-fp8-fast`, accessed through Cloudflare Workers AI. The browser sends the current question to the backend. The backend uses weighted keyword overlap to select up to four passages before inference. Matching uses passage text, topic, publisher, title and source limitations, with a small generic term-alias list. The complete ranking and selected passage snapshots are returned in the trace. The model receives only the question and selected passages. This project does not train the model or use a vector search index. Retrieval is lexical and may miss paraphrases or relevant evidence; a miss does not establish absence from the whole corpus.
+The current model is `@cf/meta/llama-3.3-70b-instruct-fp8-fast`, accessed through Cloudflare Workers AI. The browser sends the current question to the backend. The backend searches the public corpus and current versions of authorized uploaded files. D1 full-text search provides upload candidates; weighted keyword overlap ranks up to six passages per search. The agent can finish, choose a focused search or inspect version metadata. It is limited to three searches and eighteen accumulated passages per query. Matching uses passage text, topic, publisher, title and source limitations, with a small generic term-alias list. The complete ranking and selected passage snapshots are returned in the trace. The answer model receives the current question, selected passages and any version-tool results. A monitoring comparison also receives the saved answer and earlier evidence snapshots. It does not receive chat history from development sessions. This project does not train the model or use a vector search index. Retrieval is lexical and may miss paraphrases or relevant evidence; a miss does not establish absence from the whole corpus.
 
-The complete system prompt is the `instructions` variable in [demo/rfi.mjs](demo/rfi.mjs). It requires answers to use supplied passages and cite supporting passage IDs. It also requires the model to preserve attribution, flag unresolved source differences, and identify missing context or documents needed to resolve an RFI.
+Earlier public-corpus projects use `instructions` in [demo/rfi.mjs](demo/rfi.mjs). Isolated uploaded-document projects use [demo/project-instructions.mjs](demo/project-instructions.mjs), without assuming that their records describe Ocean Pavilion. [demo/agent.mjs](demo/agent.mjs) adds uploaded-document rules and the tool-choice prompt. [demo/monitor.mjs](demo/monitor.mjs) contains the evidence-change comparison prompt. It requires answers to use supplied passages and cite supporting passage IDs. It also requires the model to preserve attribution, flag unresolved source differences, and identify missing context or documents needed to resolve an RFI.
 
 `createAnswerSchema` in the same file defines `answer`, `citations`, `missingInformation` and `sourceDifferences`. Each source-difference entry contains a topic, source-attributed claims and an explanation. Its references must point to retrieved, cited passages from at least two distinct source documents. `worker.mjs` and `server.mjs` pass the prompt as a system message and serialize the current question with the retrieved passages as the user message. Citation IDs are restricted to that retrieved set. The trace records selected passage IDs separately from final citation IDs; it is an observable retrieval record, not hidden model reasoning.
 
@@ -213,6 +258,7 @@ From the repository root, deploy the API, then build and deploy the main website
 cd demo
 npm ci
 npx wrangler login
+npx wrangler d1 execute info492-demo3 --remote --file schema.sql
 npm run deploy:api
 cd ../website
 npm ci
@@ -221,12 +267,13 @@ npx firebase login
 npx firebase deploy --only hosting --project info492-sub-team-4 --config firebase.json
 ```
 
-The Worker uses the `AI` binding in `demo/wrangler.json`. The main Hosting configuration selects site `info492-sub-team-4` and publishes the demo at `/demo/`. Its demo pages use the same Worker API as the standalone site. The API allows both main-site and standalone-site origins.
+The Worker uses the `AI` and `DB` bindings and the cron trigger in `demo/wrangler.json`. Create a D1 database and update its binding ID before deploying to a different account. Apply `schema.sql` to that database. Shared-project members must be provisioned by an administrator; membership cannot be requested by changing a frontend role selector. The Hosting configuration selects site `info492-sub-team-4` and publishes the demo at `/demo/` on the team website.
 
-Inside `demo/`, `npm run build` prepares only `index.html`, `sources.html`, `styles.css`, `app.js`, `sources.js`, `shared.js` and `corpus_for_manual_search.md` in `demo/dist/`. It inserts the Worker origin from the build command into the frontend and updates the matching connection policy in `demo/firebase.json`. The website build copies those public files into `website/dist/demo/`. The scoring key is not a published static file or an AI context source.
+Inside `demo/`, `npm run build` now runs the complete website build. That build invokes `demo/build.mjs`, whose explicit public-file allowlist bundles Firebase Auth and document parsing, inserts the Worker origin and sets the connection policy. The built demo is copied into `website/dist/demo/`. Uploaded project files are served only through the authenticated API, not as public Hosting assets. Evaluation keys in `eval/` are neither published static files nor AI context sources.
 
-The standalone demo remains available at its existing URL. To update it separately, run `npm run deploy:site` inside `demo/`; that command selects Hosting site `info492-team4-demo1` and does not deploy the homepage.
+For a frontend-only update after both application folders have been installed, run `npx firebase login`, then `npm run deploy:site` inside `demo/`. This builds and publishes the existing team homepage with its integrated demo. It does not deploy the Worker API or push GitHub. The earlier standalone demo address is no longer the submission entry.
 
 For a deployment to different accounts, update the Hosting site and project settings, the Worker name, and the API origins in the build scripts. Update `allowedOrigins` in `worker.mjs` to match the new frontend origins.
 
 Environment files, dependency folders and generated deployment folders are excluded by `.gitignore`. Keep credentials out of Git.
+

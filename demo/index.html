@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="An AI-assisted RFI reference finder using attributed public-source summaries about the Seattle Aquarium Ocean Pavilion." />
-    <title>Demo 2 | RFI Reference Finder</title>
+    <title>Demo 3 | RFI Reference Finder</title>
     <link rel="stylesheet" href="styles.css" />
     <script src="app.js" type="module"></script>
   </head>
@@ -13,26 +13,43 @@
       <header class="project-header">
         <div class="site-header">
           <a class="brand" href="/" aria-label="Sub Team 4 home">INFO 492 · SUB TEAM 4</a>
-          <span class="sample-label">DEMO 2 · PUBLIC-SOURCE CORPUS</span>
+          <span class="sample-label">DEMO 3 · PROJECT DOCUMENTS</span>
         </div>
         <section class="intro" aria-labelledby="page-title">
           <p class="eyebrow">RFI REFERENCE FINDER</p>
-          <h1 id="page-title">Find the detail.<br /><span>Keep the evidence.</span></h1>
-          <p class="intro-copy">Search the Ocean Pavilion sources and check the evidence.</p>
-          <p class="data-note">Paraphrased public sources and simulated RFI tasks. Not approved construction specifications.</p>
+          <h1 id="page-title">Find evidence for your RFI.</h1>
+          <p class="intro-copy">Find supporting project information for an RFI. Check the sources before sharing it for review.</p>
+          <p class="data-note">Public-source summaries and simulated RFI tasks. Check the version and approval labels on uploaded project files.</p>
         </section>
       </header>
 
       <main>
+        <section id="login-panel" class="panel entry-panel" aria-labelledby="login-title">
+          <h2 id="login-title">Sign in</h2>
+          <p>Choose a demo account below, then sign in.</p>
+          <div id="demo-accounts" class="demo-accounts" aria-label="Demo accounts"></div>
+          <p class="demo-account-note">Shared demo workspace. Use sample files only.</p>
+          <form id="login-form">
+            <label for="login-email">Email</label>
+            <input id="login-email" type="email" autocomplete="username" required maxlength="254">
+            <label for="login-password">Password</label>
+            <input id="login-password" type="password" autocomplete="current-password" required maxlength="128">
+            <p id="login-error" class="error-message" role="alert" hidden></p>
+            <div class="entry-actions"><button id="login-button" class="primary-button" type="submit">Sign in</button></div>
+          </form>
+        </section>
+        <section id="dashboard" hidden>
+          <div class="panel workspace-bar"><div><span id="organization-name" class="eyebrow">CONCRETE SUBCONTRACTOR</span><h2 id="active-role"></h2><p id="role-description"></p><p id="project-name"></p><p id="account-email" class="account-email"></p></div><div class="entry-actions"><a class="secondary-button" href="files.html">Project files</a><button id="show-guide" class="secondary-button">Guide</button><button id="sign-out" class="secondary-button">Sign out</button></div></div>
+          <section id="pending-panel" class="panel" hidden><h2>Shared items to review</h2><div id="pending-items"></div></section>
         <div class="workspace">
           <section class="question-column" aria-labelledby="question-title">
             <div class="question-panel panel">
               <div class="section-heading">
-                <h2 id="question-title">Ask the documents</h2>
+                <h2 id="question-title">Search project documents</h2>
                 <span id="connection-status" class="connection-status">Checking AI setup</span>
               </div>
               <form id="question-form">
-                <label for="question">Your question</label>
+                <div class="field-heading"><label for="question">Your question</label><button id="use-example" class="text-button" type="button">Use example</button></div>
                 <textarea id="question" name="question" rows="4" maxlength="1000" required placeholder="According to Terracon's case report, what material and strength were reported for the tank walls?"></textarea>
                 <div class="form-footer">
                   <span id="request-status" role="status" aria-live="polite"></span>
@@ -54,20 +71,38 @@
                 <p>Ask a question to see the answer and its sources.</p>
               </div>
               <div id="answer-content" hidden>
+                <p id="answer-state" class="answer-state" role="status"></p>
                 <p id="answer-text" class="answer-text"></p>
+                <div id="key-evidence" hidden></div>
                 <section id="source-differences-panel" class="source-differences-panel" aria-labelledby="source-differences-title" hidden>
                   <h3 id="source-differences-title">Source differences</h3>
                   <div id="source-differences" class="source-differences"></div>
                 </section>
-                <div class="result-section">
-                  <h3>Supporting corpus passages</h3>
+                <details id="evidence-details" class="result-section" open>
+                  <summary>Supporting passages</summary>
                   <div id="citations" class="citations"></div>
-                </div>
+                </details>
                 <div class="missing-panel">
                   <h3>Still missing</h3>
                   <ul id="missing-information"></ul>
                   <p id="nothing-missing" hidden>No missing information was identified in this response.</p>
                 </div>
+
+              </div>
+            </section>
+            <section id="review-panel" class="review-panel panel" aria-labelledby="review-title">
+              <h3 id="review-title">Check this answer</h3>
+              <p id="review-empty">After your first search, check the supporting passages and save your review here.</p><div id="review-content" hidden><p>Check each supporting passage above, then record your decision.</p><label id="gap-check-label" class="passage-check" hidden><input id="gap-check" type="checkbox">I reviewed why the answer cannot be established.</label>
+              <form id="review-form">
+                <label for="review-decision">Review decision</label><select id="review-decision" required></select>
+                <label for="review-note">Review notes</label><textarea id="review-note" rows="2" maxlength="1000" placeholder="What did you confirm, or what still needs clarification?"></textarea>
+                <label class="passage-check"><input id="share-review" type="checkbox">Share this item with the assigned project team</label>
+                <button id="save-review" class="primary-button" type="submit">Save review</button>
+                <p id="review-message" role="status" aria-live="polite"></p>
+              </form>
+              <p class="entry-note">This records a human review of the information. It does not approve construction or send an RFI.</p>
+              <div id="review-history"></div>
+              <button id="save-monitor" class="secondary-button" type="button" hidden>Save and monitor updates</button><p id="monitor-message" role="status"></p>
               </div>
             </section>
             <details id="retrieval-panel" class="retrieval-panel panel" aria-labelledby="retrieval-title" hidden>
@@ -80,17 +115,20 @@
           <aside class="sidebar">
           <section class="documents-panel panel" aria-labelledby="documents-title">
             <div class="section-heading">
-              <h2 id="documents-title">Source corpus</h2>
+              <h2 id="documents-title">Public source corpus</h2>
               <span id="document-count" class="document-count">0</span>
             </div>
             <p id="corpus-meta" class="corpus-meta"></p>
-            <a class="corpus-button" href="sources.html">View source corpus <span aria-hidden="true">↗</span></a>
+            <a class="corpus-button" href="sources.html">Browse public sources <span aria-hidden="true">↗</span></a>
+            <a class="corpus-button" href="files.html">Uploaded project files <span aria-hidden="true">↗</span></a>
             <a class="manual-packet-link" href="corpus_for_manual_search.md" download>Download manual search packet</a>
           </section>
           <section class="records-panel panel" aria-labelledby="records-title">
-            <h2 id="records-title">Session records</h2>
+            <h2 id="records-title">Search history</h2>
             <p id="record-count" class="record-count" aria-live="polite">0 recorded requests</p>
-            <p id="storage-note" class="records-copy">Download before closing this tab.</p>
+            <div id="record-list" class="record-list"></div>
+            <button id="toggle-records" class="text-button history-toggle" type="button" aria-controls="record-list" aria-expanded="false" hidden>Show all</button>
+            <p id="storage-note" class="records-copy">Saved answers stay with your account.</p>
             <div class="record-actions">
               <button id="download-records" class="secondary-button" type="button" disabled>Download CSV</button>
               <button id="download-json" class="text-button" type="button" disabled>Raw JSON</button>
@@ -98,9 +136,20 @@
           </section>
           </aside>
         </div>
+        <section id="monitoring-panel" class="panel monitoring-panel"><div class="section-heading"><h2>Monitoring</h2><button id="refresh-monitoring" class="secondary-button" type="button">Refresh updates</button></div><p id="monitoring-status" role="status"></p><div id="monitor-items"></div><h2>Updates to review</h2><div id="update-items"></div><details><summary>Background check history</summary><div id="monitor-runs"></div></details></section>
+        </section>
       </main>
 
       <footer><span>INFO 492 · SUB TEAM 4</span><span>AI-assisted document retrieval</span></footer>
     </div>
+    <dialog id="tour" aria-labelledby="tour-title" aria-describedby="tour-description">
+      <div id="tour-highlight" aria-hidden="true"></div>
+      <section id="tour-card">
+        <div class="tour-heading"><span id="tour-count"></span><button id="tour-skip" class="text-button" type="button">Skip tour</button></div>
+        <h2 id="tour-title" aria-live="polite"></h2>
+        <p id="tour-description" aria-live="polite"></p>
+        <div class="tour-actions"><button id="tour-back" class="secondary-button" type="button">Back</button><button id="tour-next" class="primary-button" type="button">Next</button></div>
+      </section>
+    </dialog>
   </body>
 </html>

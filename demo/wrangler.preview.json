@@ -1,6 +1,7 @@
 {
   "name": "info492-demo2-preview",
   "main": "worker.mjs",
+  "d1_databases": [{ "binding": "DB", "database_name": "info492-demo3", "database_id": "b6a68450-08bd-462c-9af5-4abc280ed9df" }],
   "compatibility_date": "2026-10-14",
   "ai": {
     "binding": "AI",

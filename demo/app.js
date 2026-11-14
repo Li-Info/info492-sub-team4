@@ -1,4 +1,8 @@
-import { element, request, passageLink, sourceLink, recordsToCsv } from "./shared.js";
+import { demoAccounts } from "./demo-accounts.js";
+import { configureProjectUI, renderReviewHistory, renderPending, refreshMonitoring } from "./project-ui.js";
+import { startTour } from "./tour.js";
+import { getAuthToken, signIn, signOutAccount, authError } from "./firebase-client.js";
+import { element, request, passageLink, sourceLink, recordsToCsv, setTokenProvider } from "./shared.js";
 
 const questionForm = document.querySelector("#question-form");
 const questionInput = document.querySelector("#question");
@@ -12,9 +16,15 @@ const emptyState = document.querySelector("#empty-state");
 const answerMeta = document.querySelector("#answer-meta");
 const downloadButton = document.querySelector("#download-records");
 const jsonButton = document.querySelector("#download-json");
-const stateKey = "info492-demo2-session-v1";
+const historyToggle = document.querySelector("#toggle-records");
+let stateKey;
+let currentUser;
 let records = [];
+let historyExpanded = false;
 let latest = null;
+const publicExample = "According to Terracon's case report, what material and strength were reported for the tank walls?";
+let exampleQuestion = publicExample;
+setTokenProvider(getAuthToken);
 
 function saveState() {
   try {
@@ -28,19 +38,46 @@ function updateRecordCount() {
   document.querySelector("#record-count").textContent = `${records.length} recorded request${records.length === 1 ? "" : "s"}`;
   downloadButton.disabled = records.length === 0;
   jsonButton.disabled = records.length === 0;
+  if (records.length <= 4) historyExpanded = false;
+  historyToggle.hidden = records.length <= 4;
+  historyToggle.textContent = historyExpanded ? "Show less" : `Show all (${records.length})`;
+  historyToggle.setAttribute("aria-expanded", String(historyExpanded));
+  const list = document.querySelector("#record-list");
+  list.replaceChildren();
+  for (const record of records.slice(historyExpanded ? 0 : -4).reverse()) {
+    const button = element("button", "record-item", record.question);
+    button.append(element("span", "", record.error ? "Request failed" : decisionLabels[record.review?.decision] || "Awaiting your review"));
+    button.addEventListener("click", () => {
+      latest = record;
+      questionInput.value = latest.question;
+      errorMessage.hidden = true;
+      if (latest.error) { document.querySelector("#review-content").hidden = true; document.querySelector("#review-empty").hidden = false; answerContent.hidden = true; emptyState.hidden = false; showError(latest.error); renderTrace(latest.result?.trace); }
+      else renderAnswer(latest.result);
+      saveState();
+      answerPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    list.append(button);
+  }
 }
+
+historyToggle.addEventListener("click", () => {
+  historyExpanded = !historyExpanded;
+  updateRecordCount();
+});
 
 function showError(message) {
   errorMessage.textContent = message;
   errorMessage.hidden = false;
 }
 
-function renderTrace(trace) {
+function renderTrace(trace, checks) {
   const panel = document.querySelector("#retrieval-panel");
   panel.hidden = !trace;
   panel.open = false;
   if (!trace) return;
   const retrieval = trace.retrieval;
+  const activity = element("div", "run-activity");
+  for (const tool of trace.activity || []) activity.append(element("p", "", `${tool.tool}: ${tool.query || (tool.passageIds || []).join(", ") || "Version metadata checked"}`));
   const sentIds = trace.modelInputPassageIds || [];
   const citedIds = trace.citedPassageIds || [];
   document.querySelector("#retrieval-summary").textContent = `${retrieval.passages.length} retrieved · ${sentIds.length} sent · ${citedIds.length} cited`;
@@ -60,6 +97,8 @@ function renderTrace(trace) {
     stage.append(ids.length ? list : element("p", "", "None"));
     stages.append(stage);
   }
+  stages.append(activity);
+  if (checks) { const checked = element("section", "run-checks"); checked.append(element("h3", "", "Checks performed")); for (const value of Object.values(checks)) checked.append(element("p", "", value)); stages.append(checked); }
   const container = document.querySelector("#retrieved-passages");
   container.replaceChildren();
   for (const passage of retrieval.passages) {
@@ -83,6 +122,12 @@ function renderTrace(trace) {
 function renderAnswer(result) {
   document.querySelector("#answer-text").textContent = result.answer;
   const differences = result.sourceDifferences || [];
+  const state = document.querySelector("#answer-state");
+  state.className = "answer-state " + (differences.length ? "danger" : result.missingInformation.length ? "warning" : "evidence");
+  state.textContent = differences.length ? "Source difference — human review needed" : result.missingInformation.length ? "Information missing" : "Evidence found — check the cited passages";
+  document.querySelector("#evidence-details").open = currentUser.role !== "foreman";
+  const keyEvidence = document.querySelector("#key-evidence"); keyEvidence.replaceChildren(); keyEvidence.hidden = currentUser.role !== "foreman";
+  for (const source of result.sources.slice(0, 2)) keyEvidence.append(passageLink(source, `${source.publisher} · ${source.title}`));
   document.querySelector("#source-differences-panel").hidden = differences.length === 0;
   const differenceContainer = document.querySelector("#source-differences");
   differenceContainer.replaceChildren();
@@ -108,10 +153,21 @@ function renderAnswer(result) {
     label.append(element("span", "", source.sourceId), element("span", "", source.publisher));
     card.append(label, element("h4", "", source.title));
     card.append(element("p", "source-meta", source.location), passageLink(source, source.id));
-    card.append(element("p", "excerpt-label", "Source summary"), element("blockquote", "", source.text));
+    card.append(element("p", "excerpt-label", source.versionId ? "Uploaded text" : "Source summary"), element("blockquote", "", source.text));
     const links = element("div", "citation-links");
     links.append(passageLink(source), sourceLink(source));
     card.append(links);
+    const checkLabel = element("label", "passage-check");
+    const check = document.createElement("input");
+    check.type = "checkbox";
+    check.value = source.id;
+    check.checked = Boolean(latest?.checkedPassageIds?.includes(source.id));
+    check.addEventListener("change", () => {
+      latest.checkedPassageIds = [...document.querySelectorAll("#citations .passage-check input:checked")].map(input => input.value);
+      saveState();
+    });
+    checkLabel.append(check, document.createTextNode("I checked this passage against the answer"));
+    card.append(checkLabel);
     citations.append(card);
   }
   if (!result.sources.length) citations.append(element("p", "no-citations", "No supporting corpus passage was cited."));
@@ -124,7 +180,18 @@ function renderAnswer(result) {
   answerMeta.hidden = false;
   emptyState.hidden = true;
   answerContent.hidden = false;
-  renderTrace(result.trace);
+  document.querySelector("#review-empty").hidden = true;
+  document.querySelector("#review-content").hidden = false;
+  renderTrace(result.trace, result.checks);
+  document.querySelector("#gap-check-label").hidden = result.sources.length > 0;
+  document.querySelector("#gap-check").checked = Boolean(latest?.gapChecked);
+  const decisions = document.querySelector("#review-decision");
+  const prompt = element("option", "", "Select a review decision"); prompt.value = "";
+  decisions.replaceChildren(prompt, ...currentUser.decisions.map(value => { const option = element("option", "", decisionLabels[value]); option.value = value; return option; }));
+  decisions.value = "";
+  document.querySelector("#review-note").value = "";
+  renderReviewHistory(latest);
+  document.querySelector("#review-message").textContent = latest?.review ? `Saved: ${decisionLabels[latest.review.decision]}` : "Awaiting your review.";
 }
 
 function clearAnswer() {
@@ -134,6 +201,8 @@ function clearAnswer() {
   emptyState.hidden = false;
   document.querySelector("#retrieval-panel").hidden = true;
   latest = null;
+  document.querySelector("#review-content").hidden = true;
+  document.querySelector("#review-empty").hidden = false;
   requestStatus.textContent = "";
 }
 
@@ -149,6 +218,7 @@ questionForm.addEventListener("submit", async event => {
   clearAnswer();
   answerPanel.setAttribute("aria-busy", "true");
   askButton.disabled = true;
+  document.querySelector("#sign-out").disabled = true;
   askButton.textContent = "Searching…";
   questionInput.readOnly = true;
   requestStatus.textContent = "Searching passages…";
@@ -158,15 +228,15 @@ questionForm.addEventListener("submit", async event => {
     const result = await request("/api/ask", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ question }),
+      body: JSON.stringify({ question, versionId: new URL(location.href).searchParams.get("version") || undefined }),
     });
-    latest = { question, result, startedAt, completedAt: new Date().toISOString(), browserRequestMs: Math.round(performance.now() - started) };
+    latest = { ownerId: currentUser.id, shared: false, role: currentUser.role, question, result, startedAt, completedAt: new Date().toISOString(), browserRequestMs: Math.round(performance.now() - started) };
     records.push(latest);
     renderAnswer(result);
     requestStatus.textContent = "Answer ready.";
   } catch (error) {
     const message = error.name === "TimeoutError" ? "The request took too long. This failed attempt was recorded; please try again." : error.message;
-    latest = { question, error: message, result: error.data || null, startedAt, completedAt: new Date().toISOString(), browserRequestMs: Math.round(performance.now() - started) };
+    latest = { role: currentUser.role, question, error: message, result: error.data || null, startedAt, completedAt: new Date().toISOString(), browserRequestMs: Math.round(performance.now() - started) };
     records.push(latest);
     showError(message);
     renderTrace(error.data?.trace);
@@ -175,6 +245,7 @@ questionForm.addEventListener("submit", async event => {
     updateRecordCount();
     saveState();
     askButton.disabled = false;
+    document.querySelector("#sign-out").disabled = false;
     askButton.replaceChildren(document.createTextNode("Ask AI "), element("span", "", "↗"));
     askButton.lastChild.setAttribute("aria-hidden", "true");
     questionInput.readOnly = false;
@@ -186,7 +257,7 @@ function downloadRecords(content, type, extension) {
   const url = URL.createObjectURL(new Blob([content], { type }));
   const link = element("a");
   link.href = url;
-  link.download = `info492-demo2-records-${new Date().toISOString().replace(/[:.]/g, "-")}.${extension}`;
+  link.download = `info492-demo3-records-${new Date().toISOString().replace(/[:.]/g, "-")}.${extension}`;
   document.body.append(link);
   link.click();
   link.remove();
@@ -198,40 +269,175 @@ downloadButton.addEventListener("click", () => {
 });
 
 jsonButton.addEventListener("click", () => {
-  const record = { formatVersion: "1.1", pipelineVersion: "demo2-1.1", exportedAt: new Date().toISOString(), timingNote: "Request times exclude reading, evidence review and writing a final participant answer. They are not full-task completion times.", records };
+  const record = { formatVersion: "1.2", interfaceVersion: "demo3", pipelineVersion: "demo3-1.1", exportedAt: new Date().toISOString(), timingNote: "Request times exclude reading, evidence review and writing a final participant answer. They are not full-task completion times.", records };
   downloadRecords(JSON.stringify(record, null, 2) + "\n", "application/json", "json");
 });
 
 async function load() {
   try {
-    const saved = JSON.parse(sessionStorage.getItem(stateKey) || "null");
-    if (saved && Array.isArray(saved.records)) {
-      records = saved.records;
-      questionInput.value = saved.question || "";
-      latest = saved.latest;
-      if (latest?.error) {
-        showError(latest.error);
-        renderTrace(latest.result?.trace);
-      } else if (latest?.result) {
-        renderAnswer(latest.result);
-      }
-    }
-  } catch {
-    latest = null;
-  }
-  updateRecordCount();
+    const draft = JSON.parse(sessionStorage.getItem(stateKey) || "null");
+    if (draft) questionInput.value = draft.question || "";
+    await loadHistory(draft?.latest?.result?.recordId);
+  } catch (error) { showError(error.message); }
+  updateRecordCount(); renderPending(records);
   try {
-    const [data, status] = await Promise.all([request("/api/documents"), request("/api/status")]);
-    document.querySelector("#document-count").textContent = data.sourceCount;
-    document.querySelector("#corpus-meta").textContent = `${data.sourceCount} sources · ${data.documents.length} passages`;
+    const isolated = currentUser.sourceMode === "uploads-only";
+    const [data, status] = await Promise.all([request(isolated ? "/api/files" : "/api/documents"), request("/api/status")]);
+    const sourceCount = isolated ? data.files.filter(file => file.current_version === file.version_id && file.state === "ready").length : data.sourceCount;
+    document.querySelector("#document-count").textContent = sourceCount;
+    document.querySelector("#corpus-meta").textContent = isolated ? `${sourceCount} searchable files · Synthetic training records` : `${data.sourceCount} sources · ${data.documents.length} passages`;
     const providerName = { cloudflare: "Cloudflare", gemini: "Gemini", openai: "OpenAI", anthropic: "Claude" }[status.provider] || "AI";
     connectionStatus.textContent = status.ready ? `${providerName} configured` : `${providerName} not configured`;
     connectionStatus.classList.toggle("ready", status.ready);
-    if (!status.ready) requestStatus.textContent = "AI access has not been set up yet. You can still browse the source corpus.";
+    if (!status.ready) requestStatus.textContent = "AI access has not been set up yet. You can still browse the project documents.";
   } catch {
     connectionStatus.textContent = "Service unavailable";
     showError("The AI service is unavailable. Reload the page and try again.");
   }
 }
 
-load();
+const decisionLabels = { "flag-review": "Flag for project team review", "clarification-needed": "Clarification needed", "request-evidence": "Request more evidence", "ready-for-rfi": "Confirm ready for RFI preparation", checked: "Evidence checked", "needs-information": "Needs more information", "ready-for-coordination": "Ready for GC coordination", "technical-review-complete": "Technical review complete" };
+
+function showEntry(panel) {
+  for (const id of ["login-panel", "dashboard"]) document.querySelector(`#${id}`).hidden = id !== panel;
+}
+
+async function enterWorkspace(user) {
+  currentUser = user;
+  document.body.dataset.role = user.role;
+  configureProjectUI(user, () => latest, openSavedRecord);
+  const isolated = user.sourceMode === "uploads-only";
+  document.querySelector("#organization-name").textContent = user.organization;
+  document.querySelector(".intro .data-note").textContent = isolated ? user.notice : "Public-source summaries and simulated RFI tasks. Check the version and approval labels on uploaded project files.";
+  document.querySelector("#documents-title").textContent = isolated ? "Source documents" : "Public source corpus";
+  const corpusButtons = document.querySelectorAll(".documents-panel .corpus-button");
+  corpusButtons[0].href = isolated ? "files.html" : "sources.html";
+  corpusButtons[0].firstChild.textContent = isolated ? "Browse source documents " : "Browse public sources ";
+  corpusButtons[1].hidden = isolated;
+  document.querySelector(".manual-packet-link").hidden = isolated;
+  exampleQuestion = isolated ? "Which documents describe the Area A tank base?" : publicExample;
+  questionInput.placeholder = exampleQuestion;
+  document.querySelector("#question-title").textContent = { foreman: "Ask a field question", engineer: "Search and verify documents", manager: "Search project evidence" }[user.role];
+  stateKey = `info492-demo3-records-${user.projectId}-${user.id}`;
+  document.querySelector("#active-role").textContent = user.label;
+  document.querySelector("#role-description").textContent = user.description;
+  document.querySelector("#account-email").textContent = user.email;
+  showEntry("dashboard");
+  startTour(currentUser.id);
+  await load();
+  await refreshMonitoring();
+}
+
+for (const [index, account] of demoAccounts.entries()) {
+  const card = element("article", "demo-account");
+  const details = element("dl", "demo-credentials");
+  for (const [label, value] of [["Email", account.email], ["Password", account.password]]) {
+    const field = element("dd"); field.append(element("code", "", value));
+    details.append(element("dt", "", label), field);
+  }
+  const button = element("button", "text-button", "Use this account");
+  button.type = "button";
+  button.dataset.account = String(index);
+  button.setAttribute("aria-label", `Use ${account.label} account`);
+  button.addEventListener("click", () => {
+    document.querySelector("#login-email").value = account.email;
+    document.querySelector("#login-password").value = account.password;
+    document.querySelector("#login-error").hidden = true;
+    document.querySelector("#login-button").focus();
+  });
+  card.append(element("h3", "", account.label), details, button);
+  document.querySelector("#demo-accounts").append(card);
+}
+
+document.querySelector("#login-form").addEventListener("submit", async event => {
+  event.preventDefault();
+  const button = document.querySelector("#login-button");
+  const error = document.querySelector("#login-error");
+  button.disabled = true;
+  button.textContent = "Signing in…";
+  error.hidden = true;
+  for (const choice of document.querySelectorAll("#demo-accounts button")) choice.disabled = true;
+  try {
+    await signIn(document.querySelector("#login-email").value.trim(), document.querySelector("#login-password").value);
+    const user = await request("/api/session");
+    document.querySelector("#login-password").value = "";
+    await enterWorkspace(user);
+  } catch (failure) {
+    await signOutAccount().catch(() => {});
+    error.textContent = authError(failure); error.hidden = false;
+  } finally {
+    button.disabled = false; button.textContent = "Sign in";
+    for (const choice of document.querySelectorAll("#demo-accounts button")) choice.disabled = false;
+  }
+});
+
+document.querySelector("#sign-out").addEventListener("click", async () => {
+  const button = document.querySelector("#sign-out");
+  button.disabled = true;
+  try { await signOutAccount(); } catch { button.disabled = false; showError("Sign-out could not be completed. Please try again."); return; }
+  sessionStorage.removeItem(stateKey);
+  records = [];
+  historyExpanded = false;
+  latest = null;
+  currentUser = null;
+  questionInput.value = "";
+  clearAnswer();
+  updateRecordCount();
+  document.querySelector("#citations").replaceChildren();
+  document.querySelector("#answer-text").textContent = "";
+  document.querySelector("#review-note").value = "";
+  document.querySelector("#account-email").textContent = "";
+  document.querySelector("#login-password").value = "";
+  document.querySelector("#login-error").hidden = true;
+  showEntry("login-panel");
+  button.disabled = false;
+});
+document.querySelector("#show-guide").addEventListener("click", () => startTour(currentUser.id, true));
+document.querySelector("#use-example").addEventListener("click", () => { questionInput.value = exampleQuestion; clearAnswer(); saveState(); questionInput.focus(); });
+document.querySelector("#review-form").addEventListener("submit", async event => {
+  event.preventDefault();
+  const record = latest;
+  if (!record?.result?.recordId) return;
+  const button = document.querySelector("#save-review");
+  const message = document.querySelector("#review-message");
+  button.disabled = true;
+  document.querySelector("#sign-out").disabled = true;
+  try {
+    const result = await request("/api/review", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ recordId: record.result.recordId, share: document.querySelector("#share-review").checked, decision: document.querySelector("#review-decision").value, checkedPassageIds: record.checkedPassageIds || [], note: document.querySelector("#review-note").value }) });
+    record.reviewHistory = [...(record.reviewHistory || []), result];
+    record.review = result;
+    if (document.querySelector("#share-review").checked || result.decision === "flag-review") record.shared = true;
+    renderReviewHistory(record); renderPending(records);
+    saveState(); updateRecordCount();
+    if (latest === record) message.textContent = `Saved: ${decisionLabels[result.decision]}`;
+  } catch (error) { if (latest === record) message.textContent = error.message; }
+  finally { button.disabled = false; document.querySelector("#sign-out").disabled = false; }
+});
+
+async function restoreAccess() {
+  try {
+    if (await getAuthToken()) await enterWorkspace(await request("/api/session"));
+  } catch (error) {
+    await signOutAccount().catch(() => {});
+    showEntry("login-panel");
+    document.querySelector("#login-error").textContent = authError(error);
+    document.querySelector("#login-error").hidden = false;
+  }
+}
+
+document.querySelector("#gap-check").addEventListener("change", event => { if (latest) { latest.gapChecked = event.target.checked; saveState(); } });
+restoreAccess();
+
+function openSavedRecord(record) {
+  latest = record; questionInput.value = record.question; errorMessage.hidden = true;
+  renderAnswer(record.result); saveState(); answerPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+async function loadHistory(selectedId) {
+  const data = await request("/api/history");
+  records = data.records.map(record => {
+    const reviewHistory = record.reviews.map(r => ({ role: r.role, reviewerId: r.actor_id, decision: r.decision, note: r.note, checkedPassageIds: JSON.parse(r.checked_ids), reviewedAt: r.created_at }));
+    return { ownerId: record.owner_id, shared: Boolean(record.shared), role: record.owner_role, question: record.question, result: record.result, reviewHistory, review: reviewHistory.at(-1), completedAt: record.created_at };
+  }).reverse();
+  latest = records.find(record => record.result.recordId === selectedId) || null;
+  if (latest) renderAnswer(latest.result);
+}
