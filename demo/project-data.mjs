@@ -1,4 +1,6 @@
 import { dataset, HttpError } from "./rfi.mjs";
+import { decorateRfiVersion, rfiSearchVersions, isRfiProject } from "./rfi-data.mjs";
+import { evidenceTitle } from "./answer-state.js";
 
 export const now = () => new Date().toISOString();
 export const uid = () => crypto.randomUUID();
@@ -36,17 +38,18 @@ export function versionPassages(version, chunks) {
     return ({
     id: chunk.id, sourceId: version.file_id, documentId: version.file_id, versionId: version.id,
     versionNumber: version.number, revision: version.revision, publishedOn: version.dated,
-    sourceType: "uploaded_project_document", title: version.title || version.filename, publisher: "Project upload",
+    ...(version.rfi_number ? { rfiNumber: version.rfi_number, rfiDisposition: version.disposition, replacedBy: version.replaced_by } : {}),
+    sourceType: "uploaded_project_document", title: evidenceTitle(version), filename: version.filename, publisher: "Project upload",
     location: `V${version.number} · ${version.revision || "No revision label"}${page ? ` · PDF page ${page}` : ""} · passage ${chunk.position + 1}`,
     evidenceClass: version.kind, limits: `User-labelled ${version.kind}; approval label: ${version.approval}. Verify applicability and approval with the project team.`,
-    area: version.area, approval: version.approval, topic: `${version.title || version.filename} ${version.area}`, text: chunk.text, url: "",
+    area: version.area, approval: version.approval, topic: `${evidenceTitle(version)} ${version.area}`, text: chunk.text, url: "",
   }); });
 }
 
 export async function getVersion(env, session, id) {
   const version = await one(env.DB, "SELECT v.*,f.title,f.current_version FROM versions v JOIN files f ON f.id=v.file_id WHERE v.id=? AND v.project_id=?", id, session.projectId);
   if (!version) throw new HttpError(404, "This file version is not available in your project.");
-  return version;
+  return decorateRfiVersion(env.DB, version);
 }
 
 export function searchExpression(query) {
@@ -56,7 +59,13 @@ export function searchExpression(query) {
 
 export async function searchProject(env, session, query, { versionId, eventSeq } = {}) {
   if (!env.DB) return dataset.documents;
-  const base = (await projectContext(env, session)).sourceMode === "uploads-only" ? [] : dataset.documents;
+  const context = await projectContext(env, session);
+  const base = context.sourceMode === "uploads-only" ? [] : dataset.documents;
+  const rfiSelection = isRfiProject(context) ? await rfiSearchVersions(env, session, query, { versionId, eventSeq }) : null;
+  if (rfiSelection) {
+    const chunks = rfiSelection.versions.length ? await rows(env.DB, "SELECT * FROM chunks WHERE project_id=? AND version_id IN (SELECT value FROM json_each(?)) ORDER BY version_id,position", session.projectId, JSON.stringify(rfiSelection.versions.map(v => v.id))) : [];
+    return [...rfiSelection.versions.flatMap(v => versionPassages(v, chunks.filter(c => c.version_id === v.id)).map((p,i)=>({...p,rfiPrimary:i<2}))), ...rfiSelection.logPassages];
+  }
   let versions;
   if (versionId) versions = [await getVersion(env, session, versionId)];
   else if (eventSeq !== undefined) versions = await rows(env.DB, "SELECT v.*,f.title FROM versions v JOIN files f ON f.id=v.file_id JOIN activations a ON a.version_id=v.id WHERE a.project_id=? AND a.event_seq=(SELECT MAX(a2.event_seq) FROM activations a2 WHERE a2.file_id=a.file_id AND a2.event_seq<=?) AND v.state='ready'", session.projectId, eventSeq);
@@ -64,6 +73,10 @@ export async function searchProject(env, session, query, { versionId, eventSeq }
   const expression = searchExpression(query);
   if (!expression || !versions.length) return versionId ? [] : base;
   const matching = await rows(env.DB, "SELECT c.* FROM chunk_search s JOIN chunks c ON c.id=s.id WHERE chunk_search MATCH ? AND c.project_id=? AND c.version_id IN (SELECT value FROM json_each(?)) ORDER BY bm25(chunk_search) LIMIT 96", expression, session.projectId, JSON.stringify(versions.map(v => v.id)));
+  if (isRfiProject(context)) {
+    const metadata=await rows(env.DB,"SELECT version_id,rfi_number,disposition,replaced_by FROM rfi_documents WHERE project_id=? AND version_id IN (SELECT value FROM json_each(?))",session.projectId,JSON.stringify(versions.map(v=>v.id)));
+    versions=versions.map(v=>({...v,...metadata.find(m=>m.version_id===v.id)}));
+  }
   const allowed = new Map(versions.map(v => [v.id, v]));
   const uploaded = matching.filter(c => allowed.has(c.version_id)).flatMap(chunk => versionPassages(allowed.get(chunk.version_id), [chunk]));
   return versionId ? uploaded : [...base, ...uploaded];

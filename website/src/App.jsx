@@ -20,7 +20,7 @@ export default function App() {
           className="paper-link"
           href="/demo/"
         >
-          Try Demo 3
+          Try Demo 4
         </a>
       </header>
 

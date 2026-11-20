@@ -2,7 +2,9 @@ import { demoAccounts } from "./demo-accounts.js";
 import { configureProjectUI, renderReviewHistory, renderPending, refreshMonitoring } from "./project-ui.js";
 import { startTour } from "./tour.js";
 import { getAuthToken, signIn, signOutAccount, authError } from "./firebase-client.js";
-import { element, request, passageLink, sourceLink, recordsToCsv, setTokenProvider } from "./shared.js";
+import { element, request, passageLink, sourceLink, recordsToCsv, setTokenProvider, selectedProject, selectProject } from "./shared.js";
+import { renderConclusions, renderRelated, logLink } from "./rfi-ui.js";
+import { answerSummary, evidenceTitle } from "./answer-state.js";
 
 const questionForm = document.querySelector("#question-form");
 const questionInput = document.querySelector("#question");
@@ -22,6 +24,7 @@ let currentUser;
 let records = [];
 let historyExpanded = false;
 let latest = null;
+let availableProjects = [];
 const publicExample = "According to Terracon's case report, what material and strength were reported for the tank walls?";
 let exampleQuestion = publicExample;
 setTokenProvider(getAuthToken);
@@ -120,15 +123,26 @@ function renderTrace(trace, checks) {
 }
 
 function renderAnswer(result) {
+  const summary = answerSummary(result);
   document.querySelector("#answer-text").textContent = result.answer;
+  document.querySelector("#answer-text").hidden = Boolean(result.conclusions?.length);
+  renderConclusions(document.querySelector("#answer-conclusions"), result.conclusions, result.sources, note => {
+    const choices = currentUser.decisions;
+    document.querySelector("#review-decision").value = choices.includes("clarification-needed") ? "clarification-needed" : choices.includes("flag-review") ? "flag-review" : "request-evidence";
+    document.querySelector("#review-note").value = note.slice(0,1000);
+    document.querySelector("#review-panel").scrollIntoView({behavior:"smooth",block:"center"});
+    document.querySelector("#review-note").focus();
+  });
+  renderRelated(document.querySelector("#related-rfis"), result.relatedRfis || []);
+  document.querySelector("#related-rfis-panel").hidden = !result.relatedRfis?.length;
   const differences = result.sourceDifferences || [];
   const state = document.querySelector("#answer-state");
-  state.className = "answer-state " + (differences.length ? "danger" : result.missingInformation.length ? "warning" : "evidence");
-  state.textContent = differences.length ? "Source difference — human review needed" : result.missingInformation.length ? "Information missing" : "Evidence found — check the cited passages";
+  state.className = "answer-state " + ({ "source-difference": "danger", insufficient: "warning", "reported-evidence": "evidence" }[summary.answerState]);
+  state.textContent = { "source-difference": "Source difference — human review needed", insufficient: "Information missing", "reported-evidence": "Evidence found — check the cited passages" }[summary.answerState];
   document.querySelector("#evidence-details").open = currentUser.role !== "foreman";
   const keyEvidence = document.querySelector("#key-evidence"); keyEvidence.replaceChildren(); keyEvidence.hidden = currentUser.role !== "foreman";
-  for (const source of result.sources.slice(0, 2)) keyEvidence.append(passageLink(source, `${source.publisher} · ${source.title}`));
-  document.querySelector("#source-differences-panel").hidden = differences.length === 0;
+  for (const source of result.sources.slice(0, 2)) keyEvidence.append(passageLink(source, `${source.publisher} · ${evidenceTitle(source)}`));
+  document.querySelector("#source-differences-panel").hidden = differences.length === 0 || Boolean(result.conclusions?.length);
   const differenceContainer = document.querySelector("#source-differences");
   differenceContainer.replaceChildren();
   for (const difference of differences) {
@@ -151,11 +165,15 @@ function renderAnswer(result) {
     const card = element("article", "citation");
     const label = element("div", "citation-label");
     label.append(element("span", "", source.sourceId), element("span", "", source.publisher));
-    card.append(label, element("h4", "", source.title));
+    card.append(label, element("h4", "", evidenceTitle(source)));
     card.append(element("p", "source-meta", source.location), passageLink(source, source.id));
-    card.append(element("p", "excerpt-label", source.versionId ? "Uploaded text" : "Source summary"), element("blockquote", "", source.text));
+    const preview = source.excerpt || source.text.slice(0,280) + (source.text.length > 280 ? "…" : "");
+    card.append(element("p", "excerpt-label", source.excerpt ? "Quoted evidence" : "Passage preview"), element("blockquote", "", preview));
+    const full = element("details", "full-passage"); full.append(element("summary", "", "Read full passage"), element("blockquote", "", source.text)); card.append(full);
     const links = element("div", "citation-links");
     links.append(passageLink(source), sourceLink(source));
+    if (source.rfiNumber) links.append(logLink(source.rfiNumber));
+    if (source.rfiDisposition === "void") card.append(element("p", "answer-state warning", `VOID record${source.replacedBy ? ` · replaced by RFI ${source.replacedBy}` : ""}`));
     card.append(links);
     const checkLabel = element("label", "passage-check");
     const check = document.createElement("input");
@@ -172,9 +190,9 @@ function renderAnswer(result) {
   }
   if (!result.sources.length) citations.append(element("p", "no-citations", "No supporting corpus passage was cited."));
   const missing = document.querySelector("#missing-information");
-  missing.replaceChildren(...result.missingInformation.map(text => element("li", "", text)));
-  missing.hidden = result.missingInformation.length === 0;
-  document.querySelector("#nothing-missing").hidden = result.missingInformation.length > 0;
+  missing.replaceChildren(...summary.missingInformation.map(text => element("li", "", text)));
+  missing.hidden = summary.missingInformation.length === 0;
+  document.querySelector("#nothing-missing").hidden = summary.missingInformation.length > 0;
   answerMeta.textContent = `Pipeline request ${(result.durationMs / 1000).toFixed(1)}s`;
   answerMeta.title = result.model;
   answerMeta.hidden = false;
@@ -219,6 +237,7 @@ questionForm.addEventListener("submit", async event => {
   answerPanel.setAttribute("aria-busy", "true");
   askButton.disabled = true;
   document.querySelector("#sign-out").disabled = true;
+  document.querySelector("#project-select").disabled = true;
   askButton.textContent = "Searching…";
   questionInput.readOnly = true;
   requestStatus.textContent = "Searching passages…";
@@ -246,6 +265,7 @@ questionForm.addEventListener("submit", async event => {
     saveState();
     askButton.disabled = false;
     document.querySelector("#sign-out").disabled = false;
+    document.querySelector("#project-select").disabled = false;
     askButton.replaceChildren(document.createTextNode("Ask AI "), element("span", "", "↗"));
     askButton.lastChild.setAttribute("aria-hidden", "true");
     questionInput.readOnly = false;
@@ -257,7 +277,7 @@ function downloadRecords(content, type, extension) {
   const url = URL.createObjectURL(new Blob([content], { type }));
   const link = element("a");
   link.href = url;
-  link.download = `info492-demo3-records-${new Date().toISOString().replace(/[:.]/g, "-")}.${extension}`;
+  link.download = `info492-demo4-records-${new Date().toISOString().replace(/[:.]/g, "-")}.${extension}`;
   document.body.append(link);
   link.click();
   link.remove();
@@ -269,7 +289,7 @@ downloadButton.addEventListener("click", () => {
 });
 
 jsonButton.addEventListener("click", () => {
-  const record = { formatVersion: "1.2", interfaceVersion: "demo3", pipelineVersion: "demo3-1.1", exportedAt: new Date().toISOString(), timingNote: "Request times exclude reading, evidence review and writing a final participant answer. They are not full-task completion times.", records };
+  const record = { formatVersion: "1.3", interfaceVersion: "demo4", pipelineVersion: "demo4-1.0", projectId: currentUser.projectId, exportedAt: new Date().toISOString(), timingNote: "Request times exclude reading, evidence review and writing a final participant answer. They are not full-task completion times.", records };
   downloadRecords(JSON.stringify(record, null, 2) + "\n", "application/json", "json");
 });
 
@@ -285,7 +305,7 @@ async function load() {
     const [data, status] = await Promise.all([request(isolated ? "/api/files" : "/api/documents"), request("/api/status")]);
     const sourceCount = isolated ? data.files.filter(file => file.current_version === file.version_id && file.state === "ready").length : data.sourceCount;
     document.querySelector("#document-count").textContent = sourceCount;
-    document.querySelector("#corpus-meta").textContent = isolated ? `${sourceCount} searchable files · Synthetic training records` : `${data.sourceCount} sources · ${data.documents.length} passages`;
+    document.querySelector("#corpus-meta").textContent = isolated ? `${sourceCount} searchable files · ${currentUser.datasetId?.startsWith("demo4-") ? "Project RFI records" : "Synthetic training records"}` : `${data.sourceCount} sources · ${data.documents.length} passages`;
     const providerName = { cloudflare: "Cloudflare", gemini: "Gemini", openai: "OpenAI", anthropic: "Claude" }[status.provider] || "AI";
     connectionStatus.textContent = status.ready ? `${providerName} configured` : `${providerName} not configured`;
     connectionStatus.classList.toggle("ready", status.ready);
@@ -303,6 +323,7 @@ function showEntry(panel) {
 }
 
 async function enterWorkspace(user) {
+  if (currentUser && currentUser.projectId !== user.projectId) { saveState(); records=[];latest=null;historyExpanded=false;questionInput.value="";clearAnswer(); }
   currentUser = user;
   document.body.dataset.role = user.role;
   configureProjectUI(user, () => latest, openSavedRecord);
@@ -315,7 +336,12 @@ async function enterWorkspace(user) {
   corpusButtons[0].firstChild.textContent = isolated ? "Browse source documents " : "Browse public sources ";
   corpusButtons[1].hidden = isolated;
   document.querySelector(".manual-packet-link").hidden = isolated;
-  exampleQuestion = isolated ? "Which documents describe the Area A tank base?" : publicExample;
+  const realRfi = user.datasetId?.startsWith("demo4-");
+  exampleQuestion = realRfi ? user.datasetId.includes("nkc") ? "What changed between RFI 025 and RFI 025.1?" : "What does the response to RFI 569.3 say, and which RFI does it reference?" : isolated ? "Which documents describe the Area A tank base?" : publicExample;
+  document.querySelector("#register-link").hidden = !realRfi;
+  const projectSelect = document.querySelector("#project-select"); projectSelect.replaceChildren();
+  for (const p of availableProjects) { const o=element("option","",p.name); o.value=p.id;projectSelect.append(o); }
+  projectSelect.value=user.projectId;
   questionInput.placeholder = exampleQuestion;
   document.querySelector("#question-title").textContent = { foreman: "Ask a field question", engineer: "Search and verify documents", manager: "Search project evidence" }[user.role];
   stateKey = `info492-demo3-records-${user.projectId}-${user.id}`;
@@ -359,7 +385,7 @@ document.querySelector("#login-form").addEventListener("submit", async event => 
   for (const choice of document.querySelectorAll("#demo-accounts button")) choice.disabled = true;
   try {
     await signIn(document.querySelector("#login-email").value.trim(), document.querySelector("#login-password").value);
-    const user = await request("/api/session");
+    const user = await workspaceSession();
     document.querySelector("#login-password").value = "";
     await enterWorkspace(user);
   } catch (failure) {
@@ -376,6 +402,7 @@ document.querySelector("#sign-out").addEventListener("click", async () => {
   button.disabled = true;
   try { await signOutAccount(); } catch { button.disabled = false; showError("Sign-out could not be completed. Please try again."); return; }
   sessionStorage.removeItem(stateKey);
+  selectProject("");
   records = [];
   historyExpanded = false;
   latest = null;
@@ -416,7 +443,7 @@ document.querySelector("#review-form").addEventListener("submit", async event =>
 
 async function restoreAccess() {
   try {
-    if (await getAuthToken()) await enterWorkspace(await request("/api/session"));
+    if (await getAuthToken()) await enterWorkspace(await workspaceSession());
   } catch (error) {
     await signOutAccount().catch(() => {});
     showEntry("login-panel");
@@ -427,6 +454,19 @@ async function restoreAccess() {
 
 document.querySelector("#gap-check").addEventListener("change", event => { if (latest) { latest.gapChecked = event.target.checked; saveState(); } });
 restoreAccess();
+
+async function workspaceSession() {
+  availableProjects = (await request("/api/projects")).projects;
+  const p = availableProjects.find(p => p.id === selectedProject()) || availableProjects[0];
+  selectProject(p?.id || "");
+  return request("/api/session");
+}
+document.querySelector("#project-select").addEventListener("change", async event => {
+  const previous=selectedProject(), selector=event.target; selector.disabled=true;askButton.disabled=true;
+  try { selectProject(selector.value); const url=new URL(location.href);url.searchParams.delete("version");history.replaceState(null,"",url); await enterWorkspace(await request("/api/session")); }
+  catch(e) { selectProject(previous);selector.value=previous;showError(e.message); }
+  finally { selector.disabled=false;askButton.disabled=false; }
+});
 
 function openSavedRecord(record) {
   latest = record; questionInput.value = record.question; errorMessage.hidden = true;

@@ -21,3 +21,7 @@ CREATE INDEX IF NOT EXISTS versions_project ON versions(project_id,file_id,state
 CREATE INDEX IF NOT EXISTS events_project ON file_events(project_id,seq);
 CREATE INDEX IF NOT EXISTS runs_pending ON runs(status,available_at,event_seq);
 CREATE INDEX IF NOT EXISTS monitors_project ON monitors(project_id,state);
+CREATE TABLE IF NOT EXISTS rfi_register (project_id TEXT NOT NULL REFERENCES projects(id), rfi_number TEXT NOT NULL, title TEXT NOT NULL, status TEXT NOT NULL, metadata TEXT NOT NULL, log_version_id TEXT NOT NULL REFERENCES versions(id), row_number INTEGER NOT NULL, PRIMARY KEY(project_id,rfi_number,row_number));
+CREATE TABLE IF NOT EXISTS rfi_documents (version_id TEXT PRIMARY KEY REFERENCES versions(id), project_id TEXT NOT NULL, rfi_number TEXT NOT NULL, disposition TEXT NOT NULL DEFAULT 'record', replaced_by TEXT NOT NULL DEFAULT '', change_log TEXT NOT NULL DEFAULT '[]');
+CREATE TABLE IF NOT EXISTS rfi_links (source_version_id TEXT NOT NULL REFERENCES versions(id), project_id TEXT NOT NULL, target_number TEXT NOT NULL, relation TEXT NOT NULL, reason TEXT NOT NULL, page INTEGER NOT NULL, PRIMARY KEY(source_version_id,target_number,relation));
+CREATE INDEX IF NOT EXISTS rfi_documents_number ON rfi_documents(project_id,rfi_number);

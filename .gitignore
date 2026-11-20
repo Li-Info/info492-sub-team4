@@ -6,3 +6,4 @@ dist/
 .firebase/
 .wrangler/
 .dev.vars*
+.preview/

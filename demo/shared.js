@@ -1,5 +1,8 @@
+import { answerSummary } from "./answer-state.js";
 export const apiBase = "";
 let tokenProvider = async () => null;
+export function selectedProject() { try { return sessionStorage.getItem("info492-active-project") || ""; } catch { return ""; } }
+export function selectProject(id) { try { id ? sessionStorage.setItem("info492-active-project", id) : sessionStorage.removeItem("info492-active-project"); } catch {} }
 export function setTokenProvider(provider) { tokenProvider = provider; }
 
 function csvCell(value) {
@@ -9,7 +12,7 @@ function csvCell(value) {
 }
 
 export function recordsToCsv(records) {
-  const rows = [["Request", "Question", "AI answer", "Retrieved passages", "Sent to AI", "Cited passages", "Missing information", "Source differences", "Request seconds", "Status", "Error", "Score", "Notes", "User role", "Review decision", "Checked passages", "Review notes", "Reviewed at"]];
+  const rows = [["Request", "Question", "AI answer", "Retrieved passages", "Sent to AI", "Cited passages", "Missing information", "Source differences", "Request seconds", "Status", "Error", "Score", "Notes", "User role", "Review decision", "Checked passages", "Review notes", "Reviewed at", "Conclusions", "Evidence quotations", "Related RFIs", "Missing referenced PDFs", "Project ID"]];
   for (const [index, record] of records.entries()) {
     const result = record.result || {};
     const trace = result.trace || {};
@@ -21,7 +24,7 @@ export function recordsToCsv(records) {
       (trace.retrieval?.passages || []).map(passage => passage.id).join("; "),
       (trace.modelInputPassageIds || []).join("; "),
       (trace.citedPassageIds || (result.sources || []).map(source => source.id)).join("; "),
-      (result.missingInformation || []).join("; "),
+      answerSummary(result).missingInformation.join("; "),
       (result.sourceDifferences || []).map(difference => `${difference.topic}: ${difference.claims.map(claim => `${claim.passageId}: ${claim.statement}`).join(" | ")} — ${difference.explanation}`).join("\n"),
       Number.isFinite(duration) ? (duration / 1000).toFixed(3) : "",
       record.error || trace.status === "failed" ? "failed" : trace.status || (result.answer ? "completed" : "unknown"),
@@ -33,6 +36,11 @@ export function recordsToCsv(records) {
       (record.review?.checkedPassageIds || []).join("; "),
       record.review?.note || "",
       record.review?.reviewedAt || "",
+      (result.conclusions || []).map(c=>`${c.status}: ${c.statement}${c.nextAction ? ` | Next check: ${c.nextAction}` : ""}`).join("\n"),
+      (result.conclusions || []).flatMap(c=>c.evidence).map(e=>`${e.passageId}: ${e.quote}`).join("\n"),
+      (result.relatedRfis || []).map(r=>r.number).join("; "),
+      (result.relatedRfis || []).filter(r=>r.missingDocument).map(r=>r.number).join("; "),
+      result.trace?.corpus?.projectId || "",
     ]);
   }
   return "\uFEFF" + rows.map(row => row.map(csvCell).join(",")).join("\r\n") + "\r\n";
@@ -48,6 +56,7 @@ export function element(tag, className, text) {
 export async function request(path, options = {}) {
   const { responseType, ...fetchOptions } = options;
   const headers = new Headers(options.headers);
+  if (selectedProject() && path !== "/api/projects") headers.set("X-Project-Id", selectedProject());
   if (!["/api/documents", "/api/questions", "/api/status"].includes(path)) {
     const token = await tokenProvider(path === "/api/session");
     if (token) headers.set("Authorization", `Bearer ${token}`);
@@ -65,7 +74,8 @@ export async function request(path, options = {}) {
 
 export function passageLink(passage, text = "View passage in corpus") {
   const link = element("a", "passage-link", text);
-  link.href = passage.versionId ? `files.html?version=${encodeURIComponent(passage.versionId)}#${encodeURIComponent(passage.id)}` : `sources.html#${encodeURIComponent(passage.id)}`;
+  link.href = passage.sourceType === "rfi_log_entry" ? `rfi-log.html?rfi=${encodeURIComponent(passage.rfiNumber)}` : passage.versionId ? `files.html?version=${encodeURIComponent(passage.versionId)}#${encodeURIComponent(passage.id)}` : `sources.html#${encodeURIComponent(passage.id)}`;
+  if (passage.versionId && passage.excerpt && passage.sourceType !== "rfi_log_entry") link.href = `files.html?version=${encodeURIComponent(passage.versionId)}&quote=${encodeURIComponent(passage.excerpt)}#${encodeURIComponent(passage.id)}`;
   return link;
 }
 

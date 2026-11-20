@@ -1,0 +1,179 @@
+{
+  "description": "Original RFI files supplied for Demo 4. This inventory describes supplied files, not a complete project archive.",
+  "projects": [
+    {
+      "projectId": "demo4-ocean-pavilion",
+      "name": "Seattle Aquarium - Ocean Pavilion",
+      "datasetId": "demo4-ocean-pavilion-rfi-v1",
+      "registerRows": 1809,
+      "files": [
+        {
+          "path": "ocean-pavilion/RFI Log.csv",
+          "bytes": 292488,
+          "sha256": "3e7c205c09f9b2da1dbeec3d00baa20003a1d21a2687f30b1d19209787dc22cf"
+        },
+        {
+          "path": "ocean-pavilion/RFI - 0059 - Concrete Shelf Dowels at SE Wall of SCL Room.pdf",
+          "bytes": 45264,
+          "sha256": "6b7fc2058efb8554f9dcf4942824ac9d121cda48fb7c9ca9b586f18595d6b35f",
+          "rfiNumber": "59",
+          "title": "Concrete Shelf Dowels at SE Wall of SCL Room",
+          "pageCount": 2,
+          "lowTextPages": []
+        },
+        {
+          "path": "ocean-pavilion/RFI - 0104 - Steel Stairs Reinforcement.pdf",
+          "bytes": 44934,
+          "sha256": "bf38843695caf81a86c1345463e2733d6db381913c0f8163159f0b4468469e5a",
+          "rfiNumber": "104",
+          "title": "Steel Stairs Reinforcement",
+          "pageCount": 2,
+          "lowTextPages": []
+        },
+        {
+          "path": "ocean-pavilion/RFI - 0175 - Roof Safety Anchors.pdf",
+          "bytes": 62801,
+          "sha256": "56b4a4190a1977aa35fdf958d4f25643b47c6ee2cff1cb45c8707ea6bbd3728a",
+          "rfiNumber": "175",
+          "title": "Roof Safety Anchors",
+          "pageCount": 2,
+          "lowTextPages": []
+        },
+        {
+          "path": "ocean-pavilion/RFI - 0232 - Tower Crane Foundation .pdf",
+          "bytes": 51403,
+          "sha256": "c1c1ecc4676b1e80d71790332cc5f32910e12392679cb4f4984ba8168cd9be1d",
+          "rfiNumber": "232",
+          "title": "Tower Crane Foundation ",
+          "pageCount": 2,
+          "lowTextPages": []
+        },
+        {
+          "path": "ocean-pavilion/RFI - 284.3 - Freight Elevaitor Bottom Plate Embedment.pdf",
+          "bytes": 56819,
+          "sha256": "ccd7d6bd7ba8b525cda695c2831078f6d2a26645479f82dbf17ba8096c407602",
+          "rfiNumber": "284.3",
+          "title": "Freight Elevaitor Bottom Plate Embedment",
+          "pageCount": 2,
+          "lowTextPages": []
+        },
+        {
+          "path": "ocean-pavilion/RFI - 428 - Added Vertical Dowel 9_S311.pdf",
+          "bytes": 55673,
+          "sha256": "564f5a8ea0c8e9fcf9b05300f8adc3e36f919c60d5d99910eba6692955395607",
+          "rfiNumber": "428",
+          "title": "Added Vertical Dowel 9_S311",
+          "pageCount": 2,
+          "lowTextPages": []
+        },
+        {
+          "path": "ocean-pavilion/RFI - 477 - Stair 8 Stud Rail.pdf",
+          "bytes": 57066,
+          "sha256": "e0c6ac91ed4b73811d10b3470695bb52885a81d1f2b1f9b7b253645a60a3171f",
+          "rfiNumber": "477",
+          "title": "Stair 8 Stud Rail",
+          "pageCount": 2,
+          "lowTextPages": []
+        },
+        {
+          "path": "ocean-pavilion/RFI - 502.1 - Column Base Plate Change.pdf",
+          "bytes": 57093,
+          "sha256": "dd17e9dd92ef84e818f6e83e62d8db6c9ff9911262dee86d331b66e912bcd156",
+          "rfiNumber": "502.1",
+          "title": "Column Base Plate Change",
+          "pageCount": 2,
+          "lowTextPages": []
+        },
+        {
+          "path": "ocean-pavilion/RFI - 569.3 - CONF. Epoxy @ Post Install Condition on Shear Wall.pdf",
+          "bytes": 52999,
+          "sha256": "608bf51a75fa48fa64366f6f1e22156d213aee59e25b1bad61b1e097441403da",
+          "rfiNumber": "569.3",
+          "title": "CONF. Epoxy @ Post Install Condition on Shear Wall",
+          "pageCount": 2,
+          "lowTextPages": []
+        }
+      ]
+    },
+    {
+      "projectId": "demo4-nkc-seattle",
+      "name": "NKC Seattle",
+      "datasetId": "demo4-nkc-seattle-rfi-v1",
+      "registerRows": 428,
+      "files": [
+        {
+          "path": "nkc-seattle/Sample RFI Log.xlsm",
+          "bytes": 115712,
+          "sha256": "91bd6322123dcb06a513572348697876c8230de84d1377d461de191e2175c4d3"
+        },
+        {
+          "path": "nkc-seattle/RFI 020 - Column Slab Connection (Response).pdf",
+          "bytes": 4084366,
+          "sha256": "f0864e82aa94d6c66939cb6479d65a437d4c8929e828903ac016f22b372e9674",
+          "rfiNumber": "20",
+          "title": "Column Slab Connection (Response)",
+          "pageCount": 7,
+          "lowTextPages": []
+        },
+        {
+          "path": "nkc-seattle/RFI 021 - Rebar at CIP Penetrations (Response).pdf",
+          "bytes": 545781,
+          "sha256": "1662277813acce5b98a21755e46542916ed3e815a8a12616f07431e240ffc2a5",
+          "rfiNumber": "21",
+          "title": "Rebar at CIP Penetrations (Response)",
+          "pageCount": 2,
+          "lowTextPages": []
+        },
+        {
+          "path": "nkc-seattle/RFI 025 - LU02 Concrete Walls-VOID.pdf",
+          "bytes": 2792452,
+          "sha256": "719eb8487651a6396a692adfa7f81f481645cd99ab8261a9af1c027d2d3e20f9",
+          "rfiNumber": "25",
+          "title": "LU02 Concrete Walls-VOID",
+          "pageCount": 7,
+          "lowTextPages": []
+        },
+        {
+          "path": "nkc-seattle/RFI 025.1 - LU02 Concrete Walls Rev1 (Response).pdf",
+          "bytes": 4824495,
+          "sha256": "4d545c987d340a5778609591575765242dba0f27df69325cd092bfdd17a5c018",
+          "rfiNumber": "25.1",
+          "title": "LU02 Concrete Walls Rev1 (Response)",
+          "pageCount": 10,
+          "lowTextPages": []
+        },
+        {
+          "path": "nkc-seattle/RFI 034 - Elevator Sump Pits (Response).pdf",
+          "bytes": 3708804,
+          "sha256": "31ccfbcd1830963a3c255d01a4b608ec7807f00712f7a7365ed27c59c105aea4",
+          "rfiNumber": "34",
+          "title": "Elevator Sump Pits (Response)",
+          "pageCount": 9,
+          "lowTextPages": [
+            6
+          ]
+        },
+        {
+          "path": "nkc-seattle/RFI 043 - Shoring Conflict (Response).pdf",
+          "bytes": 4385236,
+          "sha256": "fa89dc40bdf8b4f48b997e99b320a805050e6c3bce541bba480e3ec99ad42599",
+          "rfiNumber": "43",
+          "title": "Shoring Conflict (Response)",
+          "pageCount": 8,
+          "lowTextPages": []
+        },
+        {
+          "path": "nkc-seattle/RFI 054 - Foundation Rebar Clarifications (Response).pdf",
+          "bytes": 3000601,
+          "sha256": "7def79e6ae35a123eb5984f9cf9c0a744dddcb6d483ac14b09ac755cf68c8a5f",
+          "rfiNumber": "54",
+          "title": "Foundation Rebar Clarifications (Response)",
+          "pageCount": 8,
+          "lowTextPages": [
+            3
+          ]
+        }
+      ]
+    }
+  ]
+}

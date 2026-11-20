@@ -1,6 +1,7 @@
 import * as pdfjs from "pdfjs-dist/build/pdf.mjs";
 import mammoth from "mammoth/mammoth.browser.js";
 import { maxFileBytes, maxTextBytes } from "./upload-limits.js";
+import { extractSpreadsheet } from "./spreadsheet-parser.js";
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL("./pdf.worker.mjs", import.meta.url).href;
 export async function extractFile(file) {
@@ -16,8 +17,9 @@ export async function extractFile(file) {
     finally { await task.destroy(); }
     text = pages.join("\n\n");
   } else if (/\.docx$/i.test(file.name)) text = (await mammoth.extractRawText({ arrayBuffer: buffer })).value;
+  else if (/\.(xlsx|xlsm)$/i.test(file.name)) text = await extractSpreadsheet(buffer);
   else if (/\.(txt|md|csv|json)$/i.test(file.name)) text = new TextDecoder("utf-8", { fatal: true }).decode(buffer);
-  else throw new Error("Choose PDF, DOCX, TXT, MD, CSV or JSON.");
+  else throw new Error("Choose PDF, DOCX, TXT, MD, CSV, JSON, XLSX or XLSM.");
   if (text.trim().length < 10) throw new Error("No searchable text was found. Scanned documents need OCR first.");
   if (new TextEncoder().encode(text).byteLength > maxTextBytes) throw new Error("The searchable text exceeds 1.5 MB. Split the document into smaller sections.");
   const hash = [...new Uint8Array(await crypto.subtle.digest("SHA-256", buffer))].map(v => v.toString(16).padStart(2, "0")).join("");

@@ -10,6 +10,7 @@
     "test": "node --test *.test.mjs",
     "preview": "node build.mjs --local && wrangler dev --config wrangler.preview.json --ip 127.0.0.1 --port 8792",
     "start": "npm run preview",
+    "preview:demo4": "node ../website/build.mjs --local && node preview-demo4.mjs",
     "db:local": "wrangler d1 execute info492-demo3 --local --file schema.sql",
     "generate-data": "node generate-data.mjs",
     "build": "node ../website/build.mjs",
@@ -22,6 +23,7 @@
     "wrangler": "4.151.0"
   },
   "dependencies": {
+    "jszip": "3.10.2",
     "firebase": "13.3.0",
     "jose": "6.2.3",
     "mammoth": "1.13.0",

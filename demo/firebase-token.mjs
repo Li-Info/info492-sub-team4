@@ -11,10 +11,11 @@ export async function verifyFirebaseToken(token, key = firebaseKeys) {
       issuer: `https://securetoken.google.com/${firebaseConfig.projectId}`,
       audience: firebaseConfig.projectId,
       algorithms: ["RS256"],
+      clockTolerance: 60,
       requiredClaims: ["exp", "iat", "sub", "auth_time"],
     });
     const now = Math.floor(Date.now() / 1000);
-    if (!payload.sub || payload.sub.length > 128 || typeof payload.auth_time !== "number" || payload.auth_time > now || typeof payload.iat !== "number" || payload.iat > now || typeof payload.email !== "string" || payload.firebase?.sign_in_provider !== "password") throw new Error();
+    if (!payload.sub || payload.sub.length > 128 || typeof payload.auth_time !== "number" || payload.auth_time > now + 60 || typeof payload.iat !== "number" || payload.iat > now + 60 || typeof payload.email !== "string" || payload.firebase?.sign_in_provider !== "password") throw new Error();
     return payload;
   } catch (error) {
     if (error.status === 503) throw error;

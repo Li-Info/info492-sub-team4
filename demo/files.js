@@ -1,9 +1,12 @@
 import { getAuthToken } from "./firebase-client.js";
 import { element, request, setTokenProvider } from "./shared.js";
 import { extractFile } from "./file-parser.js";
+import { logLink, renderRelated, renderChanges } from "./rfi-ui.js";
+import { evidenceTitle } from "./answer-state.js";
 setTokenProvider(getAuthToken);
 const post = (path, body) => request(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
 let user, files = [], pending, selected;
+let originalPreviewUrl;
 const byId = id => document.getElementById(id);
 const showError = error => { byId("file-error").textContent = error.message; byId("file-error").hidden = false; };
 byId("choose-file").addEventListener("click", () => byId("upload-file").click());
@@ -12,9 +15,9 @@ async function refresh() {
   const target = byId("file-list"); target.replaceChildren();
   for (const id of [...new Set(files.map(f => f.id))]) {
     const versions = files.filter(f => f.id === id), card = element("article", "file-card");
-    card.append(element("h3", "", versions[0].title));
+    card.append(element("h3", "", evidenceTitle(versions.find(v => v.current_version === v.version_id) || versions[0])));
     for (const v of versions) {
-      const button = element("button", "record-item", `V${v.number} · ${v.revision || "No formal revision"} · ${v.state === "ready" ? "Ready to search" : v.state}${v.current_version === v.version_id ? " · Current" : ""}`);
+      const button = element("button", "record-item", `${v.disposition === "void" ? "VOID · " : ""}${v.rfi_number ? `RFI ${v.rfi_number} · ` : ""}V${v.number} · ${v.revision || "No formal revision"} · ${v.state === "ready" ? "Ready to search" : v.state}${v.current_version === v.version_id ? " · Current" : ""}`);
       button.append(element("span", "", `${v.kind} · ${v.area || "Area not specified"} · ${v.approval}`));
       button.addEventListener("click", () => showVersion(v.version_id).catch(showError)); card.append(button);
     }
@@ -25,21 +28,39 @@ async function refresh() {
 async function showVersion(id) {
   const data = await post("/api/version", { versionId: id }); selected = data;
   const v = data.version;
+  if(originalPreviewUrl)URL.revokeObjectURL(originalPreviewUrl);
+  originalPreviewUrl=null;byId("original-preview").hidden=true;byId("original-preview").removeAttribute("src");
+  byId("preview-original").hidden=!/\.pdf$/i.test(v.filename);byId("preview-original").textContent="View original PDF";
   byId("version-panel").hidden = false;
-  byId("version-title").textContent = `${v.title} · V${v.number}`;
+  byId("version-title").textContent = `${evidenceTitle(v)} · V${v.number}`;
   byId("version-meta").textContent = `${v.kind} · ${v.revision || "No formal revision"} · ${v.dated || "Date not supplied"} · ${v.area || "Area not specified"} · ${v.approval}${v.current_version === id ? " · Current search version" : " · Historical or retained version"}`;
   byId("ask-version").href = `index.html?version=${encodeURIComponent(id)}`;
   byId("set-current").hidden = user.role !== "engineer" || v.current_version === id;
+  if (v.disposition === "void") byId("set-current").hidden = true;
+  const context = await post("/api/rfi-context", { versionId: id });
+  byId("rfi-version-context").hidden = !context.rfi;
+  const status=byId("rfi-version-status");status.replaceChildren();
+  if (context.rfi) {
+    status.append(logLink(context.rfi.number));
+    if(context.rfi.disposition === "void") status.append(element("p","answer-state warning",`VOID record${context.rfi.replacedBy ? ` · replaced by RFI ${context.rfi.replacedBy}` : ""}`));
+    if(context.rfi.replacedBy) status.append(logLink(context.rfi.replacedBy,`Open replacement RFI ${context.rfi.replacedBy}`));
+  }
+  renderRelated(byId("rfi-file-relations"),context.related);renderChanges(byId("rfi-change-log"),context.changes);
   const passages = byId("file-passages"); passages.replaceChildren();
   for (const p of data.passages) {
     const article = element("article", "retrieved-passage"); article.id = p.id;
-    article.append(element("h4", "", p.location), element("p", "passage-content", p.text)); passages.append(article);
+    const content=element("p","passage-content");
+    const quote=new URL(location.href).searchParams.get("quote") || "";
+    const normalized=p.text.replace(/\s+/g," "), needle=quote.replace(/\s+/g," ").trim(), start=needle ? normalized.indexOf(needle) : -1;
+    if(start>=0) content.append(document.createTextNode(normalized.slice(0,start)),element("mark","evidence-highlight",normalized.slice(start,start+needle.length)),document.createTextNode(normalized.slice(start+needle.length)));
+    else content.textContent=p.text;
+    article.append(element("h4", "", p.location), content); passages.append(article);
   }
   const compare = byId("compare-version"); compare.replaceChildren();
   for (const [value, label] of [["", "Select a version"], ...files.filter(f => f.id === v.file_id && f.version_id !== id).map(f => [f.version_id, `V${f.number} · ${f.revision || "No formal revision"}`])]) { const o = element("option", "", label); o.value = value; compare.append(o); }
   byId("version-difference").replaceChildren();
   const hash = decodeURIComponent(location.hash.slice(1));
-  const target = document.getElementById(hash);
+  const target = document.getElementById(hash) || passages.querySelector(".evidence-highlight")?.closest("article");
   if (target && passages.contains(target)) { target.classList.add("highlight-passage"); target.scrollIntoView({ block: "center" }); }
   else byId("version-panel").scrollIntoView({ behavior: "smooth", block: "start" });
   history.replaceState(null, "", `?version=${encodeURIComponent(id)}${location.hash}`);
@@ -91,6 +112,15 @@ byId("download-original").addEventListener("click", async () => {
   const button = byId("download-original"); button.disabled = true;
   try { const blob = await request("/api/download", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ versionId: selected.version.id }), responseType: "blob" }); const url = URL.createObjectURL(blob); const a = element("a"); a.href = url; a.download = selected.version.filename; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); } catch (e) { showError(e); }
   finally { button.disabled = false; }
+});
+byId("preview-original").addEventListener("click",async()=>{
+  const button=byId("preview-original"),frame=byId("original-preview");
+  if(!frame.hidden){frame.hidden=true;button.textContent="View original PDF";return;}
+  button.disabled=true;
+  try{
+    if(!originalPreviewUrl){const blob=await request("/api/download",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({versionId:selected.version.id}),responseType:"blob"});originalPreviewUrl=URL.createObjectURL(new Blob([blob],{type:"application/pdf"}));}
+    frame.src=originalPreviewUrl;frame.hidden=false;button.textContent="Hide original PDF";
+  }catch(e){showError(e);}finally{button.disabled=false;}
 });
 byId("compare-version").addEventListener("change", async event => {
   const target = byId("version-difference"); target.replaceChildren(); if (!event.target.value) return;

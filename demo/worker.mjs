@@ -1,7 +1,7 @@
 import { authenticate, roles } from "./access.mjs";
 import { dataset, questionBank, HttpError } from "./rfi.mjs";
 import { answerQuestion, agentVersion, model } from "./agent.mjs";
-import { authorizeProject } from "./project-data.mjs";
+import { authorizeProject, rows } from "./project-data.mjs";
 import { projectApi, saveAnswer } from "./project-api.mjs";
 import { drainPending, scheduleChecks } from "./monitor.mjs";
 import { readUpload, downloadOriginal } from "./file-storage.mjs";
@@ -34,11 +34,18 @@ export default {
     const json = (status, body) => Response.json(body, { status, headers });
     try {
       if (origin && !accepted) throw new HttpError(403, "This service only accepts requests from the demo website.");
-      if (request.method === "OPTIONS" && url.pathname.startsWith("/api/") && accepted) return new Response(null, { status: 204, headers: { ...headers, "Access-Control-Allow-Methods": "GET, POST", "Access-Control-Allow-Headers": "Content-Type, Authorization", "Access-Control-Max-Age": "3600" } });
+      if (request.method === "OPTIONS" && url.pathname.startsWith("/api/") && accepted) return new Response(null, { status: 204, headers: { ...headers, "Access-Control-Allow-Methods": "GET, POST", "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Project-Id", "Access-Control-Max-Age": "3600" } });
       if (request.method === "GET" && url.pathname === "/api/documents") return json(200, dataset);
       if (request.method === "GET" && url.pathname === "/api/questions") return json(200, questionBank);
       if (request.method === "GET" && url.pathname === "/api/status") return json(200, { ready: Boolean(env.AI && env.DB), provider: "cloudflare", model, pipelineVersion: agentVersion });
-      const session = await authorizeProject(env, await authenticate(request, env));
+      const account = await authenticate(request, env);
+      if (request.method === "GET" && url.pathname === "/api/projects") {
+        if (!account.assignedProject) await authorizeProject(env, account);
+        return json(200, { projects: await rows(env.DB, "SELECT p.id,p.name,c.dataset_id,c.source_mode FROM members m JOIN projects p ON p.id=m.project_id LEFT JOIN project_corpora c ON c.project_id=p.id WHERE m.user_id=? AND m.role=? AND m.active=1 ORDER BY CASE WHEN c.dataset_id LIKE 'demo4-ocean%' THEN 0 WHEN c.dataset_id LIKE 'demo4-%' THEN 1 ELSE 2 END,p.name", account.id, account.role) });
+      }
+      const selectedProject = request.headers.get("X-Project-Id");
+      if (selectedProject && !/^[a-zA-Z0-9_-]{1,100}$/.test(selectedProject)) throw new HttpError(400, "Choose an available project.");
+      const session = await authorizeProject(env, selectedProject ? { ...account, projectId: selectedProject, assignedProject: true } : account);
       if (request.method === "GET" && url.pathname === "/api/session") return json(200, { ...session, ...roles[session.role] });
       if (!["GET", "POST"].includes(request.method)) throw new HttpError(405, "This method is not available.");
       if (request.method === "POST" && !accepted) throw new HttpError(403, "Open the demo website to make changes.");

@@ -1,2 +1,4 @@
 *.pdf binary
 eval/demo3/** -text
+demo/data/demo4/** -text
+demo/data/demo4/**/*.csv whitespace=cr-at-eol

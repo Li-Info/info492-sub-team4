@@ -10,6 +10,12 @@ const env = { SESSION_SECRET: "test-only-signing-secret-at-least-32-characters" 
 const result = { answer: "A reported value.", sources: [{ id: "P1", text: "Evidence." }], missingInformation: [], sourceDifferences: [] };
 const authRequest = token => new Request("https://api.example.com/api/session", { headers: { Authorization: `Bearer ${token}` } });
 
+test("Firebase verification tolerates a small clock difference but rejects future identities",async()=>{
+  const now=Math.floor(Date.now()/1000);
+  assert.ok(await verifyFirebaseToken(await testToken({iat:now+2,auth_time:now+2}),testKey));
+  await assert.rejects(verifyFirebaseToken(await testToken({iat:now+120,auth_time:now+120}),testKey),{status:401});
+});
+
 test("Firebase identity and server-assigned claims determine the role", async () => {
   const token = await testToken({ role: "manager" });
   assert.equal((await authenticate(authRequest(token))).role, "manager");

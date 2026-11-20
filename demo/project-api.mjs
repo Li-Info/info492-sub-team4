@@ -3,6 +3,7 @@ import { roles } from "./access.mjs";
 import { now, uid, rows, one, execute, getVersion, versionPassages, loadRecord, enqueueEvents } from "./project-data.mjs";
 import { originalStatements, decodeBytes, encodeBytes } from "./file-storage.mjs";
 import { maxFileBytes, maxTextBytes } from "./upload-limits.js";
+import { rfiApi, indexRfiDocument } from "./rfi-data.mjs";
 
 const requireEngineer = session => { if (session.role !== "engineer") throw new HttpError(403, "Only the assigned Project Engineer can manage files and monitoring."); };
 const textField = (body, key, max = 200, fallback = "") => { const value = body[key] ?? fallback; if (typeof value !== "string" || value.length > max) throw new HttpError(400, `Check the ${key} field.`); return value.trim(); };
@@ -16,6 +17,7 @@ export async function saveAnswer(env, session, question, result) {
 
 export async function projectApi(path, method, body, env, session) {
   const db = env.DB, project = session.projectId;
+  if (path.startsWith("/api/rfi-")) return rfiApi(path, method, body, env, session);
   if (path === "/api/history" && method === "GET") {
     const records = await rows(db, "SELECT * FROM records WHERE project_id=? AND (owner_id=? OR shared=1) ORDER BY created_at DESC LIMIT 100", project, session.id);
     const reviews = await rows(db, "SELECT r.* FROM reviews r JOIN records a ON a.id=r.record_id WHERE a.project_id=? AND (a.owner_id=? OR a.shared=1) ORDER BY r.created_at", project, session.id);
@@ -35,7 +37,7 @@ export async function projectApi(path, method, body, env, session) {
     await db.batch(statements);
     return { id, role: session.role, reviewerId: session.id, decision: body.decision, note, checkedPassageIds: body.checkedPassageIds, reviewedAt: at };
   }
-  if (path === "/api/files" && method === "GET") return { files: await rows(db, "SELECT f.id,f.title,f.current_version,v.id AS version_id,v.number,v.filename,v.revision,v.dated,v.area,v.approval,v.kind,v.hash,v.state,v.error,v.created_at FROM files f JOIN versions v ON v.file_id=f.id WHERE f.project_id=? ORDER BY f.created_at DESC,v.number DESC", project) };
+  if (path === "/api/files" && method === "GET") return { files: await rows(db, "SELECT f.id,f.title,f.current_version,v.id AS version_id,v.number,v.filename,v.revision,v.dated,v.area,v.approval,v.kind,v.hash,v.state,v.error,v.created_at,d.rfi_number,d.disposition,d.replaced_by FROM files f JOIN versions v ON v.file_id=f.id LEFT JOIN rfi_documents d ON d.version_id=v.id AND d.project_id=f.project_id WHERE f.project_id=? ORDER BY f.created_at DESC,v.number DESC", project) };
   if (path === "/api/upload-check" && method === "POST") {
     requireEngineer(session);
     const hash = textField(body, "hash", 64);
@@ -44,7 +46,7 @@ export async function projectApi(path, method, body, env, session) {
   if (path === "/api/upload" && method === "POST") {
     requireEngineer(session);
     const filename = textField(body, "filename"), title = textField(body, "title") || filename;
-    if (!/\.(pdf|docx|txt|md|csv|json)$/i.test(filename)) throw new HttpError(400, "Upload PDF, DOCX, TXT, MD, CSV or JSON.");
+    if (!/\.(pdf|docx|txt|md|csv|json|xlsx|xlsm)$/i.test(filename)) throw new HttpError(400, "Upload PDF, DOCX, TXT, MD, CSV, JSON, XLSX or XLSM.");
     const text = textField(body, "text", maxTextBytes);
     if (text.length < 10) throw new HttpError(400, "No searchable text was extracted. Scanned images need OCR before uploading.");
     if (new TextEncoder().encode(text).byteLength > maxTextBytes) throw new HttpError(413, "The searchable text exceeds 1.5 MB. Split the document into smaller sections.");
@@ -77,6 +79,7 @@ export async function projectApi(path, method, body, env, session) {
       commands.push(db.prepare("INSERT INTO activations(event_seq,project_id,file_id,version_id) SELECT seq,?,?,? FROM file_events WHERE version_id=? ORDER BY seq DESC LIMIT 1").bind(project, fileId, id, id));
     }
     await db.batch(commands);
+    await indexRfiDocument(db, session, { id, filename, text });
     await enqueueEvents(env, project);
     return { version: await getVersion(env, session, id), state: "ready" };
   }
@@ -96,6 +99,7 @@ export async function projectApi(path, method, body, env, session) {
   if (path === "/api/current-version" && method === "POST") {
     requireEngineer(session);
     const v = await getVersion(env, session, body.versionId);
+    if (v.disposition === "void") throw new HttpError(400, "A VOID RFI cannot become the current search version. Open its replacement or retain it as history.");
     if (v.state !== "ready" || body.confirm !== true) throw new HttpError(400, "Confirm which searchable version should be current.");
     await db.batch([
       db.prepare("UPDATE files SET current_version=? WHERE id=? AND project_id=?").bind(v.id, v.file_id, project),

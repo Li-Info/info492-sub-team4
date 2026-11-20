@@ -1,0 +1,21 @@
+import {readFile,writeFile}from"node:fs/promises";
+import{cloudflareConnection}from"./cloudflare-db.mjs";
+import{openDatabase}from"./sqlite-adapter.mjs";
+import{importRfiData}from"./import-rfi-data.mjs";
+const args=process.argv.slice(2),get=k=>args[args.indexOf(k)+1];
+if(!["--input","--backup","--members-db","--apply"].every(k=>args.includes(k)))throw new Error("Explicit --apply, --input, --backup and --members-db are required for a remote import.");
+const snapshot=JSON.parse(await readFile(get("--backup"),"utf8"));
+if(!snapshot.tables?.projects||!snapshot.tables?.versions)throw new Error("A complete pre-change backup is required.");
+const env=await cloudflareConnection();
+const local=openDatabase(get("--members-db"));
+const members=local.sqlite.prepare("SELECT DISTINCT user_id AS id,role FROM members").all();local.close();
+if(members.length!==3||new Set(members.map(m=>m.role)).size!==3)throw new Error("Expected the three existing demo account assignments.");
+const prior=await env.api(`/accounts/${env.accountId}/workers/scripts/info492-demo1-api/deployments`);
+await writeFile(get("--backup")+".worker-deployments.json",JSON.stringify(prior,null,2));
+const schema=(await readFile(new URL("../schema.sql",import.meta.url),"utf8")).split(/\r?\n/).filter(l=>/^CREATE (TABLE|INDEX)/.test(l)&&/rfi_register|rfi_documents|rfi_links/.test(l));
+await env.DB.batch(schema.map(sql=>env.DB.prepare(sql)));
+const manifest=JSON.parse(await readFile(get("--input"),"utf8"));
+console.log("RFI tables are ready. Importing two separate projects without modifying existing project data.");
+console.log(JSON.stringify(await importRfiData(env,manifest,members),null,2));
+for(const old of snapshot.tables.projects){const current=await env.DB.prepare("SELECT * FROM projects WHERE id=?").bind(old.id).first();if(JSON.stringify(current)!==JSON.stringify(old))throw new Error("An existing project changed unexpectedly.");}
+console.log("Existing project rows were retained. New RFI projects are ready for API publication.");

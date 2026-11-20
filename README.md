@@ -1,19 +1,37 @@
 # INFO 492 Sub Team 4
 
-This repository contains the team website and RFI retrieval demo for a pilot study of AI-assisted information retrieval when preparing construction RFIs from a subcontractor's perspective. The project context is the Seattle Aquarium Ocean Pavilion.
+This repository contains the team website and RFI retrieval demo for a pilot study of AI-assisted information retrieval when preparing construction RFIs from a subcontractor's perspective. Demo 4 uses supplied project RFI records for the Seattle Aquarium Ocean Pavilion and a separate NKC Seattle collection. Each collection has its own project and register.
 
 The project tests whether AI-assisted retrieval improves RFI information accuracy compared with manual search using the same documents. The initial demos used a 10% improvement hypothesis. The Demo 3 submission note states a later target of 15 percentage points. These targets and evaluation stages should not be treated as interchangeable.
 
 - [Team website](https://info492-sub-team-4.web.app/)
-- [Live Demo 3](https://info492-sub-team-4.web.app/demo/)
+- [Live Demo 4](https://info492-sub-team-4.web.app/demo/)
 
-The homepage's **Try Demo 3** button opens `/demo/` on the same team website. This is the current submission website. Historical snapshots retain the original `demo1/` folder name.
+The homepage's **Try Demo 4** button opens `/demo/` on the same team website. Historical snapshots retain the original `demo1/` folder name.
+
+## Demo 4: current implementation
+
+| Material | Where to find it |
+| --- | --- |
+| Working demo | [Current workspace](https://info492-sub-team-4.web.app/demo/). Sign in with a displayed sample account and select a project. |
+| Original project data and provenance | [Demo 4 data](demo/data/demo4/README.md), including 16 original RFI PDFs and two registers. [Source inventory](demo/data/demo4/source-inventory.json) lists file hashes, page counts and extraction limits. |
+| RFI registers and related records | [Register interface](demo/rfi-log.html) and [register API](demo/rfi-data.mjs). A register entry can exist without its PDF; the interface identifies that distinction. |
+| Revision history and change log | [Version viewer](demo/files.js) and [evidence components](demo/rfi-ui.js). NKC RFI 025 remains available as a void record with its explicit reference to 025.1. |
+| Answer prompts and validation | [RFI prompt and response schema](demo/rfi-answer.mjs), [retrieval workflow](demo/agent.mjs) and [shared status rules](demo/answer-state.js). |
+| Preparation and local preview | [Demo 4 setup](demo/DEMO4.md), [preparation script](demo/tools/prepare-rfi-data.py), [import script](demo/tools/import-rfi-data.mjs) and [Python dependency](demo/requirements-rfi.txt). Node dependencies are pinned in the application lockfile. |
+| Regression checks | [RFI checks](demo/rfi-data.test.mjs), [status and title checks](demo/answer-state.test.mjs) and the existing role, storage and retrieval tests. Run `npm test` inside `demo/`. These checks are not an accuracy experiment. |
+
+The interface shows a short evidence quotation with its page and version. Full passages can be expanded, and the original PDF can be opened. Each conclusion has an evidence, conflict or missing-information status. Human review remains a separate recorded action. Known contradictions between a missing-file claim and the project's file inventory fail validation and receive one correction attempt. A quotation occurring in a passage does not independently establish that its meaning supports a conclusion.
+
+The original data remains unchanged. Missing referenced PDFs are not reconstructed or inferred from register status. The supplied registers contain 1,809 Ocean Pavilion rows and 428 NKC rows; duplicate NKC number 287.1 is retained as two source rows. These collections are not complete project archives. The earlier public-source corpus and Cedar Cove synthetic dataset remain separate. Previous evaluation results and scoring criteria are preserved below.
 
 ## Demo 3 submission materials
 
+These links preserve the earlier submission. The live demo URL now serves Demo 4; the Demo 3 code remains available in its [source snapshot](https://github.com/Li-Info/info492-sub-team4/tree/67499b98f0881280ea863512530981f3f87b9173/demo).
+
 | Requirement | Where to find it |
 | --- | --- |
-| Working system | [Team website](https://info492-sub-team-4.web.app/) and [Demo 3](https://info492-sub-team-4.web.app/demo/). Sign-in provides the Foreman, Project Engineer and Project Manager views. |
+| Working system | [Team website](https://info492-sub-team-4.web.app/) and [current application](https://info492-sub-team-4.web.app/demo/). Sign-in provides the Foreman, Project Engineer and Project Manager views. |
 | Presentation | [Slides linked from the team's Demo 3 submission tab](https://docs.google.com/presentation/d/1YIg74AzIheFEJqHieDm8K1FJuRT30m_OIslvaO4vurM/edit). |
 | Demo note, reported evaluation and individual contributions | [Coordination Demo 3 tab](https://docs.google.com/document/d/1mWZ5glFVbaz-HXh6wqxvimRZcSYoCS94IFlVUTWIhmA/edit?tab=t.hr9ed8rs6cu2). |
 | Stakeholder input | [Carrie Cassidy interview notes](https://docs.google.com/document/d/1mWZ5glFVbaz-HXh6wqxvimRZcSYoCS94IFlVUTWIhmA/edit?tab=t.uc701a695nh2), including feedback after a webpage demonstration. These are interview notes, not a recording-based transcript. |
@@ -28,18 +46,18 @@ The submission note reports 47 main evaluation tasks and one separately handled 
 
 ## Demo 3 workspace
 
-The current shared demo uses the team-supplied **Demo3_Synthetic_Data_v1** package for the fictional Cedar Cove Aquarium Annex, with Bayform Concrete as the simulated subcontractor. Its initial corpus contains only the 18 T0 PDFs in [demo/data/demo3-synthetic-v1/T0/](demo/data/demo3-synthetic-v1/T0/). The original PDF bytes are preserved. These are synthetic training records marked NOT FOR CONSTRUCTION, not Ocean Pavilion project records or professionally validated design documents.
+Demo 3 used the team-supplied **Demo3_Synthetic_Data_v1** package for the fictional Cedar Cove Aquarium Annex, with Bayform Concrete as the simulated subcontractor. Its initial corpus contains only the 18 T0 PDFs in [demo/data/demo3-synthetic-v1/T0/](demo/data/demo3-synthetic-v1/T0/). The original PDF bytes are preserved. These are synthetic training records marked NOT FOR CONSTRUCTION, not Ocean Pavilion project records or professionally validated design documents.
 
-The three public demo accounts are assigned to a fresh project that retrieves only its uploaded files. Earlier project data and history remain separate. The package's T1 and T2 documents are included as staged update-test inputs; storing them in Git does not upload them to the project's searchable corpus. TXT alternatives are not imported alongside the PDFs. Evaluator questions, answer keys and the package manifest are not part of the retrieval corpus. The supplied package did not include its original document-generation script. The historical `generate-data.mjs` prepares the earlier public-source task packet; it does not generate these synthetic PDFs.
+For Demo 3, the three public demo accounts were assigned to the Cedar Cove project, which retrieves only its uploaded files. For Demo 4, the same accounts also have role-matched membership in the two real-record projects. The project selector determines which corpus is searched. Earlier project data and history remain separate. The package's T1 and T2 documents are included as staged update-test inputs; storing them in Git does not upload them to the project's searchable corpus. TXT alternatives are not imported alongside the PDFs. Evaluator questions, answer keys and the package manifest are not part of the retrieval corpus. The supplied package did not include its original document-generation script. The historical `generate-data.mjs` prepares the earlier public-source task packet; it does not generate these synthetic PDFs.
 
 
-The three roles are internal positions within a **Concrete Subcontractor**: Foreman, Project Engineer and Project Manager. The Project Engineer is the main persona. Firebase email/password sign-in establishes identity; server-assigned claims and active project membership control access. The sign-in page displays three public demonstration accounts with their assigned role names. The account determines the authorized role after login; there is no role selector or self-registration interface. These accounts use a separate shared demo project intended for sample documents. Private project accounts remain separate. A project administrator assigns project membership and matching Firebase claims.
+The three roles are internal positions within a **Concrete Subcontractor**: Foreman, Project Engineer and Project Manager. The Project Engineer is the main persona. Firebase email/password sign-in establishes identity; server-assigned claims and active project membership control access. The sign-in page displays three public demonstration accounts with their assigned role names. The account determines the authorized role after login; there is no role selector or self-registration interface. These accounts have assigned demonstration projects. Private project accounts remain separate. A project administrator assigns project membership and matching Firebase claims.
 
 Foremen ask field questions and flag items for team review. Project Engineers manage uploaded files, check evidence and monitor their saved questions. Project Managers review explicitly shared records and record an internal RFI-preparation decision. These actions do not approve construction or send an RFI. All roles search the same evidence within their assigned project; the role changes the view and allowed actions, not the underlying facts.
 
 Answers use warning text for missing information or source differences. Human review starts with **Select a review decision**. Reviews append the actor, role, time and notes without replacing the AI answer. Saved answer and citation snapshots persist in Cloudflare D1 across sign-out. Only an owner or an assigned teammate with an explicitly shared record can access it.
 
-**Project files** accepts searchable PDF, DOCX, TXT, MD, CSV and JSON files up to 10 MiB per file (shown as 10 MB), with at most 1,500,000 UTF-8 bytes of extracted text and 100 PDF pages. PDF text keeps page markers; DOCX extraction does not invent page numbers. Scanned documents need OCR first. Extraction happens in the browser. The original file and metadata use a multipart upload; the backend verifies the original SHA-256 hash and saves base64-encoded file parts in separate D1 rows within the same indexing transaction. Original downloads stream the decoded parts and support files saved by the earlier version. Oversized files or extracted text are rejected before saving; text is not silently truncated. Duplicate content is flagged. The user chooses a separate document or a new version of an existing document and confirms keeping a duplicate. Internal V1/V2 numbering is separate from formal revision labels. Previous versions remain available. Setting the current search version requires an explicit choice; upload time alone does not establish applicability or approval. File types and approval labels are user supplied, not independently verified.
+**Project files** accepts searchable PDF, DOCX, TXT, MD, CSV, JSON, XLSX and XLSM files up to 10 MiB per file (shown as 10 MB), with at most 1,500,000 UTF-8 bytes of extracted text and 100 PDF pages. PDF text keeps page markers; DOCX extraction does not invent page numbers. Scanned documents need OCR first. Extraction happens in the browser. The original file and metadata use a multipart upload; the backend verifies the original SHA-256 hash and saves base64-encoded file parts in separate D1 rows within the same indexing transaction. Original downloads stream the decoded parts and support files saved by the earlier version. Oversized files or extracted text are rejected before saving; text is not silently truncated. Duplicate content is flagged. The user chooses a separate document or a new version of an existing document and confirms keeping a duplicate. Internal V1/V2 numbering is separate from formal revision labels. Previous versions remain available. Setting the current search version requires an explicit choice; upload time alone does not establish applicability or approval. File types and approval labels are user supplied, not independently verified.
 
 **Save and monitor updates** starts an account-owned background task. Ready-file events enter a persistent queue; a five-minute cron also checks for missed events. Each check verifies the owner's project access, compares evidence and saves its actual activity. Meaningful changes enter **Updates to review**; no-change checks only enter the log. Monitoring state, check state and human review are stored separately. A failed check keeps its event position and has two automatic retries. Users can pause, archive or manually retry failed checks. Checks process up to two queued items per worker invocation, so queued work can delay the next completed check. No notification is a guarantee that all changes were found. This implementation does not establish hours of successful operation or measured reminder accuracy.
 
@@ -102,13 +120,15 @@ The repository root has no application package. Run installation and application
 
 Use Node.js 24.18.0 or a later Node.js 24 release. The demo requires Node.js below version 25. The development environment used Node.js 24.18.0 and npm 11.16.0.
 
+Demo 4 RFI preparation also uses Python with `openpyxl`; its version is pinned in [demo/requirements-rfi.txt](demo/requirements-rfi.txt). PDF extraction uses the installed PDF.js package.
+
 The website uses React and Vite. The data preparation script uses Node.js built-in modules. The demo server also uses jose for Firebase token verification. The demo's deployment tools are Firebase CLI 15.34.0 and Wrangler 4.151.0. Each application's `package-lock.json` records its resolved dependencies; use `npm ci` to install them.
 
 ## Use the live demo
 
 Open the live demo, choose **Use this account** under one of the three sample accounts, then select **Sign in**. The assigned role appears after login. Then type or paste a question into **Your question**, then click **Ask AI**. Review the answer and its supporting corpus passages. When the response identifies unresolved source differences, **Source differences** lists each source's claim with a passage link. The **Still missing** section identifies information the response could not establish.
 
-In the current synthetic project, **Browse source documents** opens the uploaded files and their versions. Citation links open the relevant version and highlight the cited passage. Earlier public-corpus projects retain **Browse public sources** and the manual packet. The historical 12 questions in `demo/questions.json` are separate from the 48 Demo 3 candidate cases in `eval/demo3/`; there is no question selector on the website.
+In the current real-record projects, **Browse source documents** opens the uploaded files and their versions. **RFI register** opens the supplied log. The Cedar Cove synthetic project remains separate. Citation links open the relevant version and highlight the cited passage. Earlier public-corpus projects retain **Browse public sources** and the manual packet. The historical 12 questions in `demo/questions.json` are separate from the 48 Demo 3 candidate cases in `eval/demo3/`; there is no question selector on the website.
 
 Search history shows the latest four loaded records first. **Show all** expands the list and **Show less** collapses it. CSV and JSON downloads retain all loaded records; the history API currently loads up to 100 accessible records. A Foreman can open a saved answer, choose **Flag for project team review**, add a note and save it. This shares the item with the assigned team; the Project Manager can see it after refreshing the page. Reviewing an existing record does not require a new AI inference.
 
@@ -139,7 +159,7 @@ Open the local address printed by Vite to view the homepage. Run `npm run build`
 
 ### Demo
 
-The full Demo 3 preview uses Wrangler with local D1 storage and a remote Workers AI binding. Use a Cloudflare login authorized for Workers, D1 and AI, and enable Firebase email/password sign-in for the configured project.
+The general demo preview uses Wrangler with local D1 storage and a remote Workers AI binding. Use a Cloudflare login authorized for Workers, D1 and AI, and enable Firebase email/password sign-in for the configured project.
 
 ```powershell
 cd demo
@@ -155,7 +175,7 @@ Open http://127.0.0.1:8792 and stop with Ctrl+C. The preview uses a local databa
 
 ## Data and synthetic task justification
 
-This package prepares a small, source-attributed corpus of publicly reported Ocean Pavilion information, first used in Demo 1 and retained for Demo 2. These records remain available for the earlier demos and public-corpus projects; they are excluded from the current isolated Demo 3 corpus.
+This package prepares a small, source-attributed corpus of publicly reported Ocean Pavilion information, first used in Demo 1 and retained for Demo 2. These records remain available for the earlier demos and public-corpus projects. They are excluded from the isolated Cedar Cove and Demo 4 corpora.
 
 The project facts come from real public sources, but the retrieval chunks are concise paraphrases rather than complete copies of the linked documents. The 12 RFI-style prompts are synthetic evaluation tasks, not real project RFIs. The corpus does not contain approved construction specifications, material submittals, inspection acceptance criteria, or actual project RFIs. A case report that says a product or material was used must be reported as a source-attributed project claim, not upgraded into an approved requirement.
 
@@ -206,7 +226,9 @@ In **Search history**, **Download CSV** exports one row per request for viewing 
 
 ## AI workflow and LLM prompts
 
-The current model is `@cf/meta/llama-3.3-70b-instruct-fp8-fast`, accessed through Cloudflare Workers AI. The browser sends the current question to the backend. The backend searches the public corpus and current versions of authorized uploaded files. D1 full-text search provides upload candidates; weighted keyword overlap ranks up to six passages per search. The agent can finish, choose a focused search or inspect version metadata. It is limited to three searches and eighteen accumulated passages per query. Matching uses passage text, topic, publisher, title and source limitations, with a small generic term-alias list. The complete ranking and selected passage snapshots are returned in the trace. The answer model receives the current question, selected passages and any version-tool results. A monitoring comparison also receives the saved answer and earlier evidence snapshots. It does not receive chat history from development sessions. This project does not train the model or use a vector search index. Retrieval is lexical and may miss paraphrases or relevant evidence; a miss does not establish absence from the whole corpus.
+The current model is `@cf/meta/llama-3.3-70b-instruct-fp8-fast`, accessed through Cloudflare Workers AI. The browser sends the current question to the backend. The backend searches the public corpus and current versions of authorized uploaded files. D1 full-text search provides upload candidates; weighted keyword overlap ranks up to six passages per search. The agent can finish, choose a focused search or inspect version metadata. It is limited to three searches and eighteen accumulated passages per query. Matching uses passage text, topic, publisher, title and source limitations, with a small generic term-alias list. The complete ranking and selected passage snapshots are returned in the trace. The answer model receives the current question, selected passages and any version-tool results. A monitoring comparison also receives the saved answer and earlier evidence snapshots. This project does not train the model or use a vector search index. Retrieval is lexical and may miss paraphrases or relevant evidence; a miss does not establish absence from the whole corpus.
+
+Demo 4 uses [demo/rfi-answer.mjs](demo/rfi-answer.mjs) for real-record answers. Its schema adds per-conclusion evidence quotations and status. The parser checks quoted text against retrieved passages and rejects known missing-file claims that contradict project inventory. The interface uses the returned `answerState` and includes insufficient conclusions in the missing-information list. These checks preserve provenance and display consistency; they do not independently grade semantic accuracy.
 
 Earlier public-corpus projects use `instructions` in [demo/rfi.mjs](demo/rfi.mjs). Isolated uploaded-document projects use [demo/project-instructions.mjs](demo/project-instructions.mjs), without assuming that their records describe Ocean Pavilion. [demo/agent.mjs](demo/agent.mjs) adds uploaded-document rules and the tool-choice prompt. [demo/monitor.mjs](demo/monitor.mjs) contains the evidence-change comparison prompt. It requires answers to use supplied passages and cite supporting passage IDs. It also requires the model to preserve attribution, flag unresolved source differences, and identify missing context or documents needed to resolve an RFI.
 
